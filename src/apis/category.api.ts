@@ -2,6 +2,12 @@ import axiosClient from "./axiosClient";
 import { ApiResponse, Category, CategoryFilterParams } from "../types";
 
 export const categoryApi = {
+  getTree: async (): Promise<ApiResponse<Category[]>> => {
+    const response =
+      await axiosClient.get<ApiResponse<Category[]>>("/category/tree");
+    return response.data;
+  },
+
   // Get all categories (name list)
   getAll: async (): Promise<ApiResponse<Category[]>> => {
     const response =

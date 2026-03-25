@@ -5,43 +5,15 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 import { useCart } from "../../context/CartContext";
 import { FaDeleteLeft } from "react-icons/fa6";
 import ChatBot from "../../components/user/ChatBot";
-
-interface Category {
-  id: number;
-  name: string;
-  code: string;
-  bannerUrl?: string;
-  children?: Category[];
-}
-
-interface Product {
-  id: string;
-  name: string;
-  displayName?: string;
-  price?: number;
-  primaryImageUrl?: string;
-  soldQuantity?: number;
-  rating?: number;
-}
-
-interface User {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  dateOfBirth?: string;
-  gender?: "MALE" | "FEMALE" | "OTHER";
-  avatar?: string;
-  role?: string;
-  username?: string;
-}
+// 1. Import API và Types tập trung
+import { categoryApi, productApi } from "../../apis";
+import { Category, Product, Account } from "../../types";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Account | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const { cart, totalQuantity, totalPrice, removeFromCart } = useCart();
 
@@ -52,17 +24,16 @@ const Header: React.FC = () => {
   const [noResult, setNoResult] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Load categories + user info + realtime sync
+  // 1. Load categories + user info
   useEffect(() => {
-    // Categories
-    fetch("http://localhost:8080/api/v1/category/tree")
-      .then((res) => res.json())
+    // Sửa fetch thành categoryApi
+    categoryApi
+      .getTree()
       .then((res) => {
         if (res.data) setCategories(res.data);
       })
       .catch((err) => console.error("Lỗi tải danh mục:", err));
 
-    // User
     const loadUser = () => {
       const saved = localStorage.getItem("userInfo");
       setUser(saved ? JSON.parse(saved) : null);
@@ -70,7 +41,6 @@ const Header: React.FC = () => {
 
     loadUser();
 
-    // Đồng bộ khi localStorage thay đổi (từ tab khác hoặc sau login/logout)
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "userInfo") loadUser();
     };
@@ -79,7 +49,7 @@ const Header: React.FC = () => {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  // 2. Search overlay logic
+  // 2. Search overlay logic (giữ nguyên)
   useEffect(() => {
     document.body.style.overflow = isSearchOpen ? "hidden" : "auto";
     if (isSearchOpen) {
@@ -90,14 +60,6 @@ const Header: React.FC = () => {
     };
   }, [isSearchOpen]);
 
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeSearchBox();
-    };
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
-  }, []);
-
   const openSearchBox = () => setIsSearchOpen(true);
   const closeSearchBox = () => {
     setIsSearchOpen(false);
@@ -106,14 +68,12 @@ const Header: React.FC = () => {
     setNoResult(false);
   };
 
+  // Sửa fetch search thành productApi.search
   const searchProducts = async (query: string) => {
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/v1/product/search?name=${encodeURIComponent(query)}&pageNumber=0&pageSize=5`,
-      );
-      const data = await res.json();
-      if (data.data?.content?.length > 0) {
-        setSearchResults(data.data.content);
+      const res = await productApi.search(query, 0, 5);
+      if (res.data && res.data.content.length > 0) {
+        setSearchResults(res.data.content);
         setNoResult(false);
       } else {
         setSearchResults([]);
@@ -142,8 +102,9 @@ const Header: React.FC = () => {
     }
   };
 
-  const selectProduct = (productId: string) => {
-    navigate(`/product-detailed?id=${productId}`);
+  // Sửa id từ string sang number cho đồng bộ
+  const selectProduct = (productId: number) => {
+    navigate(`/product-detailed/${productId}`);
     closeSearchBox();
   };
 
@@ -167,7 +128,7 @@ const Header: React.FC = () => {
 
     const fullName =
       [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
-      user.username ||
+      user.userName ||
       "Khách hàng";
 
     const prefix =
@@ -182,7 +143,7 @@ const Header: React.FC = () => {
 
   const displayName = user
     ? [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
-      user.username ||
+      user.userName ||
       "Khách hàng"
     : "Tài khoản của tôi";
 
