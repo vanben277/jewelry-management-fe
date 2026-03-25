@@ -1,0 +1,388 @@
+body,
+html {
+  background: #f7f7fa;
+}
+
+.pd-12 {
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-top: 38px;
+}
+
+.app {
+  background: #f7f7fa;
+  min-height: 100vh;
+}
+
+.my-home {
+  max-width: 420px;
+  margin: 0px auto;
+  background: #fff;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.home-header-bg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: -14px;
+  position: absolute;
+  right: 0;
+  top: -25px;
+}
+
+.home-header-content {
+  max-width: 420px;
+  margin: 0 auto;
+  color: #fff;
+  text-align: center;
+  position: relative;
+  padding: 44px 24px;
+}
+
+.home-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.home-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.home-buy-link {
+  color: #fff;
+  font-size: 1.2rem;
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.home-buy-link:hover {
+  background-color: #fff3;
+  transition: transform 0.2s ease;
+  transform: scale(1.05);
+  border-radius: 12px;
+}
+
+.home-buy-image {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #919eab3d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-user-welcome {
+  font-size: 1.1rem;
+  margin-bottom: 2px;
+}
+
+.home-user-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 2.8rem;
+}
+
+.home-user-tags {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.home-user-tag-rank {
+  width: 110px;
+  padding: 1.5px 0 1.5px 4px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: white;
+  border-radius: 24px;
+  background: linear-gradient(
+    92.2deg,
+    #2d9cdb 3.06%,
+    #8cc8eb 23.63%,
+    #2d9cdb 42.5%,
+    #8cc8eb 61.62%,
+    #2d9cdb 92.13%
+  );
+  box-shadow: 0 4px 8px rgba(145, 158, 171, 0.16);
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+  overflow: hidden;
+}
+
+.home-user-tag {
+  background: #fff;
+  color: #359fdc;
+  border-radius: 12px;
+  padding: 3px 16px;
+  font-size: 0.9rem;
+}
+
+.home-card {
+  max-width: 420px;
+  margin: -36px auto 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.07);
+  padding: 18px 18px 12px 18px;
+  position: relative;
+}
+
+.shadow-lg {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.home-point-card {
+  margin-bottom: 18px;
+}
+
+.home-point-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.home-point-label {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 1.2rem;
+}
+
+.home-point-value {
+  font-weight: 600;
+  color: #1e5fa6;
+  font-size: 1.2rem;
+}
+
+.home-point-max {
+  color: #888;
+  font-size: 0.98rem;
+}
+
+.home-point-bar-bg {
+  background: #f0f0f0;
+  border-radius: 8px;
+  height: 7px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.home-point-bar {
+  background: #1e5fa6;
+  height: 7px;
+  border-radius: 8px;
+}
+
+.home-point-desc {
+  font-size: 0.98rem;
+  color: #888;
+}
+
+.home-feature-list {
+  margin-top: 18px;
+  margin-bottom: 18px;
+  padding-bottom: 2px;
+}
+
+.home-feature-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.home-feature-item {
+  flex: 1;
+  background-color: #fff7ed;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 4px 4px 4px;
+  gap: 20px;
+  text-decoration: none;
+  color: #222;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
+  transition: background 0.2s;
+  overflow: hidden;
+}
+
+.home-feature-item:hover {
+  background: #ffe0b2;
+}
+
+.home-feature-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 8px;
+}
+
+.home-feature-name span {
+  font-size: 1.2rem;
+  color: #46515c;
+  font-weight: 600;
+}
+
+.home-feature-name svg {
+  color: #9ca3af;
+  width: 12px;
+  height: 12px;
+}
+
+.clip-bottom-0 {
+  clip-path: inset(-20px 0 0 0);
+}
+
+.home-feature-border {
+  width: 100%;
+  padding: 0 8px;
+  height: 28px;
+  border-radius: 12px;
+  background-color: #f8e9c5;
+  position: relative;
+}
+
+.home-feature-icon {
+  position: absolute;
+  width: 65px;
+  height: 62px;
+  right: 4px;
+  top: -20px;
+}
+
+.home-banner {
+  max-width: 420px;
+  margin: 0 auto 18px auto;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.home-banner img {
+  width: 100%;
+  display: block;
+}
+
+.home-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  background: #fff;
+  box-shadow: 0 -2px 16px 0 rgba(0, 0, 0, 0.07);
+  border-radius: 50px;
+  max-width: 260px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0 4px 0;
+  z-index: 100;
+}
+
+.home-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #888;
+  text-decoration: none;
+  font-size: 1.05rem;
+  font-weight: 500;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.home-bottom-nav-item:hover {
+  color: #1d4ed8;
+}
+
+.home-bottom-nav-item i {
+  font-size: 1.3rem;
+}
+
+.home-bottom-nav-image {
+  width: 48px;
+  height: 48px;
+  background-color: var(--text-blue);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+}
+
+.home-bottom-nav-image:hover {
+  background-color: #1d4ed8;
+  scale: 1.05;
+}
+
+.home-bottom-nav-hover {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-bottom-nav-hover:hover {
+  width: 36px;
+  height: 36px;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  scale: 1.05;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 739px) {
+  .my-home {
+    max-width: 99vw;
+    padding: 8px 2vw 8px 2vw;
+    margin: unset;
+    border-radius: unset;
+  }
+
+  .home-header-bg {
+    left: -50px;
+    right: -15px;
+  }
+
+  .home-header-bg img {
+    min-width: 103%;
+    height: 286px;
+  }
+
+  .home-header-content {
+    max-width: 99vw;
+  }
+
+  .home-card {
+    max-width: 99vw;
+  }
+
+  .home-banner {
+    max-width: 99vw;
+  }
+}

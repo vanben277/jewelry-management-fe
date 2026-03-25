@@ -1,0 +1,132 @@
+.app {
+    background: #fff;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.header-text {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.order-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.info-item {
+    padding: 5px 0;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.order-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #f9f9f9;
+    font-weight: normal;
+    font-size: 14px;
+    color: #666;
+}
+
+td {
+    font-size: 14px;
+}
+
+.product-cell {
+    width: 60%;
+}
+
+.price-cell {
+    width: 40%;
+    text-align: right;
+}
+
+.note {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.payment-method,
+.total-amount,
+.grand-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.grand-total {
+    font-weight: bold;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.btn {
+    background-color: #1a237e;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-back {
+    background-color: #1a237e;
+}
+
+.btn-continue {
+    background-color: #1a237e;
+}
+
+.btn-icon {
+    margin-right: 5px;
+}
+
+.qr-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.qr-container img {
+    border: 2px solid #ddd;
+    padding: 10px;
+    background: #fff;
+    max-width: 200px;
+}

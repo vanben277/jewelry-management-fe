@@ -1,0 +1,286 @@
+body {
+  background: #f8fafc;
+}
+
+.app {
+  background: #f8fafc;
+}
+
+.order-modern {
+  max-width: 480px;
+  margin: 0px auto;
+  background: #fff;
+  padding: 24px 18px 10px 18px;
+  min-height: 100vh;
+  font-family: "Roboto", Arial, sans-serif;
+}
+
+.order-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.4rem;
+  margin-bottom: 18px;
+  justify-content: space-between;
+}
+
+.order-header a {
+  text-decoration: none;
+}
+
+.order-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: #f6f7f8;
+  width: 20px;
+  height: 20px;
+}
+
+.order-left {
+  display: flex;
+  align-items: center;
+}
+
+.order-back {
+  color: #212121;
+  font-size: 1.4rem;
+  text-decoration: none;
+  margin-right: 6px;
+}
+
+.order-title {
+  font-weight: 500;
+  color: #212121;
+}
+
+.order-section {
+  background: #fff;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  padding: 16px 12px;
+  box-shadow: 0px 4px 8px rgba(145, 158, 171, 0.16);
+}
+
+.order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.order-label {
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: #212b36;
+  margin-bottom: 6px;
+}
+
+.order-label-sku {
+  font-size: 1.3rem;
+  color: #637381;
+}
+
+.order-label-created-at {
+  font-size: 1.3rem;
+  color: #637381;
+}
+
+.order-label-created-at ~ span {
+  font-size: 1.3rem;
+  color: #637381;
+}
+
+.order-id {
+  font-weight: 400;
+  color: #637381;
+  font-size: 1.3rem;
+}
+
+.order-status-badge {
+  background: #e8f5e9;
+  color: #388e3c;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+.order-actions {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.order-action-btn {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  color: #222;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 8px 46px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.order-action-btn:hover {
+  background: #e3e3e3;
+}
+
+.order-customer-info {
+  font-size: 1rem;
+  color: #637381;
+}
+
+.order-customer-name {
+  font-weight: 400;
+  color: #212b36;
+  font-size: 1.3rem;
+  margin-bottom: 2px;
+}
+
+.order-customer-phone,
+.order-customer-address {
+  margin-bottom: 2px;
+  font-size: 1.2rem;
+}
+
+.order-products {
+  margin-bottom: 0;
+}
+
+.order-product-list {
+  margin-bottom: 12px;
+  overflow-y: scroll;
+  height: auto;
+  max-height: 250px;
+}
+
+.order-product-item-hr {
+  border-bottom: 1px dotted #eef0f3;
+}
+
+.order-product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 8px;
+  margin-bottom: 8px;
+}
+
+.order-product-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.order-product-info {
+  flex: 1;
+}
+
+.order-product-name {
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: #212b36;
+  margin-bottom: 2px;
+}
+
+.order-product-code {
+  font-size: 1.2rem;
+  color: #637381;
+  margin-bottom: 2px;
+}
+
+.order-product-price {
+  color: #1976d2;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.order-product-policy {
+  font-size: 1.1rem;
+  color: #637381;
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+}
+
+.order-total-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a237e;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
+  padding: 12px 18px;
+}
+
+.order-total-label {
+  font-size: 1.6rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.order-total-value {
+  color: #1976d2;
+  font-weight: 500;
+  font-size: 1.6rem;
+}
+
+@media (max-width: 739px) {
+  .app {
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .order-modern {
+    max-width: 99vw;
+    padding: 8px 2vw 8px 2vw;
+    margin: unset;
+    border-radius: unset;
+  }
+
+  .order-header {
+    margin-bottom: unset;
+    padding: 14px 0;
+  }
+
+  .order-section-list {
+    padding: 0 18px;
+  }
+
+  .order-section {
+    padding: 8px 12px;
+  }
+
+  .order-product-img {
+    width: 54px;
+    height: 54px;
+  }
+
+  .order-right {
+    width: 24px;
+    height: 24px;
+  }
+
+  .order-right div svg {
+    width: 1.4em;
+    height: 1.4em;
+  }
+
+  .order-total-row {
+    font-size: 1rem;
+    padding: 8px 6px;
+  }
+}

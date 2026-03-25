@@ -1,0 +1,29 @@
+/* Base */
+@import "./components/ResetBoostrap.css";
+@import "./grid.css";
+@import "./base.css";
+
+/* Framework */
+@import "./material-dashboard.css";
+@import "./nucleo-icons.css";
+@import "./nucleo-svg.css";
+
+/* Interface */
+@import "./my-home.css";
+@import "./cart.css";
+@import "./product-detailed.css";
+@import "./my-account.css";
+@import "./profile.css";
+@import "./edit-personal-info.css";
+@import "./orders.css";
+@import "./order-info.css";
+@import "./order-success.css";
+@import "./bill-order.css";
+@import "./chatbot.css";
+@import "./containers.css";
+@import "./modal-create-account.css";
+@import "./modal-create-product.css";
+
+/* Style and Responsive */
+@import "./style.css";
+@import "./responsive.css";

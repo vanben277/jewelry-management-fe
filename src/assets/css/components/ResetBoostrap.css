@@ -1,0 +1,51 @@
+.header .row>* {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    padding-right: unset;
+    padding-left: unset;
+}
+
+.m-2 {
+    margin: 0 !important;
+}
+
+dl,
+ol,
+ul {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+ol,
+ul {
+    padding-left: 0;
+}
+
+.content .row>*:last-child {
+    width: unset;
+    max-width: unset;
+}
+
+.footer--text .row>* {
+    width: unset;
+    padding: 0;
+}
+
+.no-gutters {
+    width: 100%;
+}
+
+.footer__container .no-gutters .col {
+    padding: 0 10px;
+}
+
+.text-uppercase {
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    margin: 41.940px 0;
+}
+
+.text-uppercase~p {
+    margin: 14px 0;
+}
