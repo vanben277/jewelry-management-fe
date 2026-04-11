@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
 import { orderApi } from "../../apis";
+import { PaymentMethod } from "../../types";
 
 interface CheckoutItem {
   productId: number;
@@ -21,14 +22,9 @@ const OrderInfo: React.FC = () => {
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD"); // ✅ thêm state
 
   const [formData, setFormData] = useState({
-    fullname: "",
-    phone: "",
-    address: "",
-  });
-
-  const [errors, setErrors] = useState({
     fullname: "",
     phone: "",
     address: "",
@@ -45,11 +41,12 @@ const OrderInfo: React.FC = () => {
     }
 
     setCheckoutItems(items);
-    const sum = items.reduce(
-      (acc: number, item: CheckoutItem) => acc + item.price * item.quantity,
-      0,
+    setTotal(
+      items.reduce(
+        (acc: number, item: CheckoutItem) => acc + item.price * item.quantity,
+        0,
+      ),
     );
-    setTotal(sum);
 
     if (userInfo) {
       setFormData({
@@ -64,15 +61,11 @@ const OrderInfo: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation đơn giản
     if (
       !formData.fullname.trim() ||
       !formData.phone.trim() ||
@@ -82,19 +75,18 @@ const OrderInfo: React.FC = () => {
       return;
     }
 
-    const auth = localStorage.getItem("accessToken");
-    if (!auth) {
+    if (!localStorage.getItem("accessToken")) {
       navigate("/login");
       return;
     }
 
     setLoading(true);
 
-    // ÉP KIỂU DỮ LIỆU CHUẨN ĐỂ KHÔNG LỖI 400
     const orderData = {
       customerName: formData.fullname.trim(),
       customerPhone: formData.phone.trim(),
       customerAddress: formData.address.trim(),
+      paymentMethod,
       items: checkoutItems.map((item) => ({
         productId: Number(item.productId),
         quantity: Number(item.quantity),
@@ -109,13 +101,38 @@ const OrderInfo: React.FC = () => {
       clearCart();
       navigate("/order-success");
     } catch (error: any) {
-      const errorCode = error.response?.data?.errorCode || error.response?.status || "500";
+      const errorCode =
+        error.response?.data?.errorCode || error.response?.status || "500";
       toast.error(error.response?.data?.message || "Đặt hàng thất bại");
       navigate(`/exception?code=${errorCode}`);
     } finally {
       setLoading(false);
     }
   };
+
+  // UI helper
+  const paymentOptions: {
+    value: PaymentMethod;
+    label: string;
+    sub?: string;
+    icon: string;
+  }[] = [
+    {
+      value: "COD",
+      label: "Thanh toán tiền mặt khi nhận hàng (COD)",
+      icon: "fa-money-bill",
+    },
+    {
+      value: "BANK_TRANSFER",
+      label: "Thanh toán chuyển khoản",
+      icon: "fa-building-columns",
+    },
+    {
+      value: "ZALOPAY",
+      label: "Thanh toán ZaloPay / Quét mã QR",
+      icon: "fa-qrcode",
+    },
+  ];
 
   return (
     <div className="order-container">
@@ -130,7 +147,7 @@ const OrderInfo: React.FC = () => {
         Thông tin đặt hàng
       </h2>
 
-      {/* Danh sách sản phẩm - GIỮ NGUYÊN STRUC CŨ */}
+      {/* Danh sách sản phẩm */}
       <div className="order-list">
         {checkoutItems.map((item, index) => (
           <div className="order-item" key={index}>
@@ -154,7 +171,7 @@ const OrderInfo: React.FC = () => {
         ))}
       </div>
 
-      {/* Summary - GIỮ NGUYÊN STRUC CŨ */}
+      {/* Summary */}
       <div className="summary-section">
         <table className="summary-table">
           <tbody>
@@ -196,120 +213,64 @@ const OrderInfo: React.FC = () => {
       </div>
 
       <form id="order-form" onSubmit={handleSubmit}>
+        {/* Thông tin người mua */}
         <div className="buyer-info">
           <span>Thông tin người mua</span>
-          <div>
-            <input
-              type="text"
-              name="fullname"
-              id="fullname"
-              placeholder="Họ và tên *"
-              value={formData.fullname}
-              onChange={handleInputChange}
-            />
-            <div className="error-message">{errors.fullname}</div>
-          </div>
-          <div>
-            <input
-              type="text"
-              name="phone"
-              id="phone"
-              placeholder="Số điện thoại *"
-              value={formData.phone}
-              onChange={handleInputChange}
-            />
-            <div className="error-message">{errors.phone}</div>
-          </div>
-          <div>
-            <input
-              type="text"
-              name="address"
-              id="address"
-              placeholder="Địa chỉ *"
-              value={formData.address}
-              onChange={handleInputChange}
-            />
-            <div className="error-message">{errors.address}</div>
-          </div>
-        </div>
-
-        <div className="delivery-method">
-          <div className="delivery-option">
-            <div
-              className="option"
-              style={{
-                background: "#fff6e5",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                src="https://www.pnj.com.vn/site/assets/images/delivery-bike.svg"
-                alt="Giao hàng"
-              />
-              <span style={{ fontSize: "1.2rem" }}>
-                Giao hàng tận nơi
-                <br />
-                <small>Miễn phí toàn quốc</small>
-              </span>
-            </div>
-          </div>
-          <div className="delivery-option">
-            <div
-              className="option"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                fontSize: "1.2rem",
-              }}
-            >
-              <img src="/img/in_store.png" alt="Nhận tại cửa hàng" /> Nhận tại
-              cửa hàng
-            </div>
-          </div>
+          <input
+            type="text"
+            name="fullname"
+            placeholder="Họ và tên *"
+            value={formData.fullname}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            name="phone"
+            placeholder="Số điện thoại *"
+            value={formData.phone}
+            onChange={handleInputChange}
+          />
+          <input
+            type="text"
+            name="address"
+            placeholder="Địa chỉ *"
+            value={formData.address}
+            onChange={handleInputChange}
+          />
         </div>
 
         <div className="payment-methods-section" style={{ marginTop: "20px" }}>
           <h4>Phương thức thanh toán</h4>
-          <div
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "6px",
-              color: "var(--text-color)",
-            }}
-          >
-            <strong>
-              <i className="fa-solid fa-money-bill"></i> Thanh toán tiền mặt khi
-              nhận hàng (COD)
-            </strong>
-          </div>
-          <div
-            style={{
-              border: "1px solid #ccc",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "6px",
-              color: "var(--text-color)",
-            }}
-          >
-            <strong>
-              <i className="fa-solid fa-building-columns"></i> Thanh toán chuyển
-              khoản
-            </strong>
-          </div>
-          <div
-            style={{
-              border: "1px solid #ccc",
-              background: "#f2f2f2",
-              padding: "10px",
-              borderRadius: "6px",
-              color: "var(--text-color)",
-            }}
-          >
-            <strong>Thanh toán ZaloPay / Quét mã QR</strong>
-          </div>
+          {paymentOptions.map((opt) => (
+            <div
+              key={opt.value}
+              onClick={() => setPaymentMethod(opt.value)}
+              style={{
+                border: `2px solid ${paymentMethod === opt.value ? "#b84b54" : "#ccc"}`,
+                padding: "10px",
+                marginBottom: "10px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                background:
+                  paymentMethod === opt.value
+                    ? "#fff6f6"
+                    : opt.value === "ZALOPAY"
+                      ? "#fff"
+                      : "#fff",
+                color: "var(--text-color)",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                transition: "border 0.2s",
+              }}
+            >
+              <i className={`fa-solid ${opt.icon}`}></i>
+              <strong>{opt.label}</strong>
+              {paymentMethod === opt.value && (
+                <span style={{ marginLeft: "auto", color: "#b84b54" }}>✓</span>
+              )}
+            </div>
+          ))}
         </div>
 
         <button

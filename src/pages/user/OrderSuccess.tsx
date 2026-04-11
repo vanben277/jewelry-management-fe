@@ -47,7 +47,6 @@ const OrderSuccess: React.FC = () => {
     localStorage.removeItem("lastOrder");
   }, [order, navigate]);
 
-  // Hàm xử lý thanh toán ZaloPay
   const handleZaloPay = async (e: React.MouseEvent) => {
     e.preventDefault();
     const token = localStorage.getItem("accessToken");
@@ -66,18 +65,19 @@ const OrderSuccess: React.FC = () => {
         amount: order.totalPrice,
       });
 
-      if (response.data?.paymentUrl) {
-        window.location.href = response.data.paymentUrl;
+      const paymentUrl =
+        (response as any).paymentUrl ?? response.data?.paymentUrl;
+
+      if (paymentUrl) {
+        window.location.href = paymentUrl;
       } else {
         toast.error("Không thể tạo link thanh toán");
       }
     } catch (err) {
-      console.error("Lỗi khi gọi API ZaloPay:", err);
       toast.error("Không thể tạo đơn thanh toán ZaloPay");
     }
   };
 
-  // Nếu không có order thì không render nội dung phía dưới
   if (!order) return null;
 
   // Định dạng ngày tháng
@@ -181,16 +181,18 @@ const OrderSuccess: React.FC = () => {
               </div>
             </div>
 
-            <div className="qr-container">
-              <h4>Thanh toán ZaloPay</h4>
-              <button
-                id="zalopay-btn"
-                className="btn btn-primary cursor-pointer"
-                onClick={handleZaloPay}
-              >
-                Thanh toán tại đây
-              </button>
-            </div>
+            {order.paymentMethod === "ZALOPAY" && (
+              <div className="qr-container">
+                <h4>Thanh toán ZaloPay</h4>
+                <button
+                  id="zalopay-btn"
+                  className="btn btn-primary cursor-pointer"
+                  onClick={handleZaloPay}
+                >
+                  Thanh toán tại đây
+                </button>
+              </div>
+            )}
 
             <div className="navigation">
               <Link to="/containers" className="btn btn-back">

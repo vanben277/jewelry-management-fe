@@ -63,6 +63,7 @@ export interface Account {
 
 export type AccountStatus = "ACTIVE" | "BANNED" | "INACTIVE" | "PENDING";
 export type UserRole = "ADMIN" | "STAFF" | "USER";
+export type PaymentMethod = "COD" | "BANK_TRANSFER" | "ZALOPAY";
 
 // Product
 export interface Product {
@@ -158,6 +159,7 @@ export interface CreateOrderRequest {
   customerName: string;
   customerPhone: string;
   customerAddress: string;
+  paymentMethod: PaymentMethod;
   items: OrderItem[];
 }
 

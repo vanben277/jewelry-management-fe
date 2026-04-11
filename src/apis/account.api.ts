@@ -16,6 +16,11 @@ export const accountApi = {
     const response = await axiosClient.put<ApiResponse<Account>>(
       `/account/${userId}`,
       formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
     return response.data;
   },

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
-  FaAngleLeft,
   FaCircleUser,
   FaKey,
   FaEnvelope,
@@ -11,8 +10,6 @@ import {
   FaMarsAndVenus,
   FaLocationDot,
   FaUserPen,
-  FaCheck,
-  FaXmark,
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa6";
@@ -135,7 +132,7 @@ const MyAccount: React.FC = () => {
     try {
       await authApi.changePassword(
         passwordForm.currentPassword,
-        passwordForm.newPassword
+        passwordForm.newPassword,
       );
       toast.success("Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
       localStorage.clear();

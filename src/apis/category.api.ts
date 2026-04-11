@@ -101,7 +101,7 @@ export const categoryApi = {
     const response = await axiosClient.delete<ApiResponse<string>>(
       "/category/hard-delete",
       {
-        data: { ids },
+        data: ids,
       },
     );
     return response.data;

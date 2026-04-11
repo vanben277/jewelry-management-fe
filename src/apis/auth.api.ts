@@ -42,13 +42,13 @@ export const authApi = {
 
   // Change Password
   changePassword: async (
-    oldPassword: string,
+    currentPassword: string,
     newPassword: string,
   ): Promise<ApiResponse<string>> => {
     const response = await axiosClient.put<ApiResponse<string>>(
       "/account/change-password",
       {
-        oldPassword,
+        currentPassword,
         newPassword,
       },
     );

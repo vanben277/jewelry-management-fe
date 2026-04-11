@@ -5,7 +5,6 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 import { useCart } from "../../context/CartContext";
 import { FaDeleteLeft } from "react-icons/fa6";
 import ChatBot from "../../components/user/ChatBot";
-// 1. Import API và Types tập trung
 import { categoryApi, productApi } from "../../apis";
 import { Category, Product, Account } from "../../types";
 
@@ -24,9 +23,7 @@ const Header: React.FC = () => {
   const [noResult, setNoResult] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Load categories + user info
   useEffect(() => {
-    // Sửa fetch thành categoryApi
     categoryApi
       .getTree()
       .then((res) => {
@@ -49,7 +46,6 @@ const Header: React.FC = () => {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  // 2. Search overlay logic (giữ nguyên)
   useEffect(() => {
     document.body.style.overflow = isSearchOpen ? "hidden" : "auto";
     if (isSearchOpen) {
@@ -68,7 +64,6 @@ const Header: React.FC = () => {
     setNoResult(false);
   };
 
-  // Sửa fetch search thành productApi.search
   const searchProducts = async (query: string) => {
     try {
       const res = await productApi.search(query, 0, 5);
@@ -102,13 +97,11 @@ const Header: React.FC = () => {
     }
   };
 
-  // Sửa id từ string sang number cho đồng bộ
   const selectProduct = (productId: number) => {
     navigate(`/product-detailed/${productId}`);
     closeSearchBox();
   };
 
-  // ── Category helpers ─────────────────────────────────────────────────────
   const toggleSubmenu = (catId: number) => {
     setOpenSubmenu(openSubmenu === catId ? null : catId);
   };
@@ -122,7 +115,6 @@ const Header: React.FC = () => {
     localStorage.setItem("selectedCategory", JSON.stringify(data));
   };
 
-  // ── User helpers ─────────────────────────────────────────────────────────
   const getGreeting = (): string => {
     if (!user) return "Tài khoản của tôi";
 
@@ -150,7 +142,6 @@ const Header: React.FC = () => {
   const avatarSrc =
     user?.avatar || "https://cdn.pnj.io/images/2023/user-regular.svg";
 
-  // ── Render PC Category Menu ──────────────────────────────────────────────
   const renderPCCategoryMenu = () =>
     categories.map((cat) =>
       cat.children && cat.children.length > 0 ? (
@@ -183,7 +174,6 @@ const Header: React.FC = () => {
       ),
     );
 
-  // ── Render Tablet Category Menu ──────────────────────────────────────────
   const renderTabletCategoryMenu = () =>
     categories.map((cat) =>
       cat.children && cat.children.length > 0 ? (

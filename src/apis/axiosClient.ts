@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 
 // Create axios instance with base configuration
 const axiosClient: AxiosInstance = axios.create({
@@ -11,18 +11,16 @@ const axiosClient: AxiosInstance = axios.create({
 
 // Request Interceptor: Attach JWT token to all requests
 axiosClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem("accessToken");
-    
-    if (accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response Interceptor: Handle global errors
@@ -38,19 +36,19 @@ axiosClient.interceptors.response.use(
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userId");
       localStorage.removeItem("auth"); // Remove old Basic Auth token
-      
+
       // Redirect to login page
       window.location.href = "/login";
     }
-    
+
     // Handle 403 Forbidden - Account banned/inactive
     if (error.response?.status === 403) {
       localStorage.clear();
       window.location.href = "/exception?code=403";
     }
-    
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosClient;
