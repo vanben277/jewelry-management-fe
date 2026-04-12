@@ -73,11 +73,11 @@ const Login: React.FC = () => {
       isValid = false;
     }
 
-    const captchaValue = recaptchaRef.current?.getValue();
-    if (!captchaValue) {
-      newErrors.captcha = "Vui lòng xác nhận CAPTCHA!";
-      isValid = false;
-    }
+    // const captchaValue = recaptchaRef.current?.getValue();
+    // if (!captchaValue) {
+    //   newErrors.captcha = "Vui lòng xác nhận CAPTCHA!";
+    //   isValid = false;
+    // }
 
     setErrors(newErrors);
     return isValid;
@@ -101,7 +101,7 @@ const Login: React.FC = () => {
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
         localStorage.setItem("accessToken", userInfo.accessToken);
         localStorage.setItem("userId", userInfo.id.toString());
-        
+
         // Xóa auth cũ (Basic Auth) nếu có
         localStorage.removeItem("auth");
 
@@ -201,7 +201,7 @@ const Login: React.FC = () => {
             </Link>
           </div>
 
-          <div className="mt-[18px] mx-[19px]">
+          {/* <div className="mt-[18px] mx-[19px]">
             <ReCAPTCHA
               ref={recaptchaRef}
               sitekey="6LfaQWssAAAAANtyv4Ql9tVpHybh6KT3-XQH_5Dq"
@@ -211,7 +211,7 @@ const Login: React.FC = () => {
                 {errors.captcha}
               </div>
             )}
-          </div>
+          </div> */}
 
           <div className="w-full flex justify-center mb-5 mt-5">
             <button
