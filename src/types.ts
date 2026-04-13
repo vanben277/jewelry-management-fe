@@ -172,6 +172,14 @@ export interface OrderFilterParams {
 }
 
 // AI Chat
+export interface Message {
+  id: string;
+  type: "user" | "bot";
+  content: string;
+  imageUrl?: string;
+  timestamp: Date;
+}
+
 export interface ChatHistory {
   id: number;
   userQuery: string;
@@ -194,12 +202,6 @@ export interface ChatSession {
 
 export interface ChatRequest {
   query: string;
-  sessionId?: string;
-}
-
-export interface ChatWithImageRequest {
-  query: string;
-  image: File;
   sessionId?: string;
 }
 
