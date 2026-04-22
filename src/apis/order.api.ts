@@ -3,8 +3,16 @@ import { ApiResponse, Order, CreateOrderRequest, OrderFilterParams } from "../ty
 
 export const orderApi = {
   // Get user orders
-  getMyOrders: async (accountId: number): Promise<ApiResponse<Order[]>> => {
-    const response = await axiosClient.get<ApiResponse<Order[]>>(`/order/me/${accountId}`);
+  getMyOrders: async (
+    accountId: number,
+    status?: string,
+    pageNumber: number = 0,
+    pageSize: number = 20
+  ): Promise<ApiResponse<any>> => {
+    const params: any = { pageNumber, pageSize };
+    if (status && status !== "all") params.status = status.toUpperCase();
+    
+    const response = await axiosClient.get(`/order/me/${accountId}`, { params });
     return response.data;
   },
 

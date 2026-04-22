@@ -23,28 +23,16 @@ const Orders: React.FC = () => {
 
   const fetchOrders = async (status: string) => {
     setLoading(true);
-
     try {
-      const res = await orderApi.getMyOrders(Number(accountId));
-
+      const res = await orderApi.getMyOrders(Number(accountId), status);
+  
       if (res.data) {
-        const allOrders: Order[] = res.data;
-
-        if (status !== "all") {
-          const filtered = allOrders.filter(
-            (order) => order.status?.toLowerCase() === status.toLowerCase(),
-          );
-          setOrders(filtered);
-        } else {
-          setOrders(allOrders);
-        }
+        const allOrders: Order[] = res.data.content ?? [];
+        setOrders(allOrders);
       }
     } catch (error: any) {
       console.error("Lỗi tải đơn hàng:", error);
-      if (
-        error.response?.data?.status &&
-        error.response.data.status !== "ACTIVE"
-      ) {
+      if (error.response?.data?.status && error.response.data.status !== "ACTIVE") {
         handleAccountIssue(error.response.data.status);
       }
     } finally {

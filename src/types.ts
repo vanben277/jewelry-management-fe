@@ -72,6 +72,7 @@ export interface Product {
   displayName: string;
   sku: string;
   price: number;
+  costPrice: number;
   quantity: number;
   description: string;
   status: ProductStatus;

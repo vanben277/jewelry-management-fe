@@ -15,7 +15,6 @@ import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { productApi, categoryApi } from "../../apis";
 import { Product } from "../../types";
 
-// --- Interfaces ---
 interface ProductImage {
   imageUrl: string;
   isPrimary: boolean;
@@ -67,6 +66,7 @@ const AdminProducts: React.FC = () => {
     sku: "",
     name: "",
     price: "",
+    costPrice: "",
     quantity: "0",
     dateOfEntry: "",
     goldType: "",
@@ -177,6 +177,7 @@ const AdminProducts: React.FC = () => {
       sku: "",
       name: "",
       price: "",
+      costPrice: "",
       quantity: "0",
       dateOfEntry: "",
       goldType: "",
@@ -198,6 +199,7 @@ const AdminProducts: React.FC = () => {
         sku: p.sku,
         name: p.name,
         price: p.price.toString(),
+        costPrice: p.costPrice != null ? p.costPrice.toString() : "",
         quantity: p.quantity.toString(),
         dateOfEntry: p.dateOfEntry.split("T")[0],
         goldType: p.goldType || "",
@@ -241,6 +243,7 @@ const AdminProducts: React.FC = () => {
     data.append("sku", formData.sku);
     data.append("name", formData.name);
     data.append("price", formData.price);
+    data.append("costPrice", formData.costPrice);
     data.append("dateOfEntry", formData.dateOfEntry);
     data.append("categoryId", formData.categoryId);
     data.append("goldType", formData.goldType);
@@ -462,6 +465,9 @@ const AdminProducts: React.FC = () => {
                         Sản phẩm
                       </th>
                       <th className="text-uppercase text-secondary !text-[1.1rem] font-weight-bolder opacity-7 text-center">
+                        Giá nhập
+                      </th>
+                      <th className="text-uppercase text-secondary !text-[1.1rem] font-weight-bolder opacity-7 text-center">
                         Giá bán
                       </th>
                       <th className="text-uppercase text-secondary !text-[1.1rem] font-weight-bolder opacity-7 text-center">
@@ -481,7 +487,7 @@ const AdminProducts: React.FC = () => {
                   <tbody>
                     {loading ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-5">
+                        <td colSpan={8} className="text-center py-5">
                           Đang tải...
                         </td>
                       </tr>
@@ -522,6 +528,9 @@ const AdminProducts: React.FC = () => {
                                 </p>
                               </div>
                             </div>
+                          </td>
+                          <td className="text-center text-[1.3rem] font-bold">
+                            {p.costPrice != null ? formatPrice(p.costPrice) : "-"}
                           </td>
                           <td className="text-center text-[1.3rem] font-bold">
                             {formatPrice(p.price)}
@@ -698,6 +707,18 @@ const AdminProducts: React.FC = () => {
 
               <div className="row">
                 <div className="col-md-6 mb-3">
+                    <label className="text-[1.4rem]">Giá nhập *</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={formData.costPrice}
+                      onChange={(e) =>
+                        setFormData({ ...formData, costPrice: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                <div className="col-md-6 mb-3">
                   <label className="text-[1.4rem]">Giá bán *</label>
                   <input
                     type="number"
@@ -709,7 +730,10 @@ const AdminProducts: React.FC = () => {
                     required
                   />
                 </div>
-                {productType === "no-size" && (
+              </div>
+
+              {productType === "no-size" && (
+                <div className="row">
                   <div className="col-md-6 mb-3">
                     <label className="text-[1.4rem]">Số lượng tổng *</label>
                     <input
@@ -721,8 +745,8 @@ const AdminProducts: React.FC = () => {
                       }
                     />
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Phần quản lý Size */}
               {productType === "with-size" && (
