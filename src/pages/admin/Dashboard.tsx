@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
+import {
+  SkeletonStatCard,
+  SkeletonChart,
+  skeletonStyles,
+} from "../../components/Skeleton";
 import { Bar } from "react-chartjs-2";
+import type { ChartData } from "chart.js";
 import { MdWarehouse } from "react-icons/md";
 import { FaCartShopping } from "react-icons/fa6";
 import { FaBoxOpen } from "react-icons/fa6";
@@ -12,10 +18,17 @@ import {
   Title,
   Tooltip,
   Legend,
+  TooltipItem,
+  ChartOptions,
 } from "chart.js";
 import toast from "react-hot-toast";
 import { useNavigate, Link } from "react-router-dom";
 import { orderApi } from "../../apis";
+import {
+  ERROR_MESSAGES,
+  AUTH_BLOCKING_CODES,
+} from "../../constants/errorCodes";
+import { extractApiErrorBody, type MonthlyRevenueData } from "../../types/api";
 
 // Đăng ký các thành phần của Chart.js
 ChartJS.register(
@@ -38,7 +51,7 @@ const AdminDashboard: React.FC = () => {
     productInventory: 0,
   });
 
-  const [chartData, setChartData] = useState<any>(null);
+  const [chartData, setChartData] = useState<ChartData<"bar"> | null>(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [avgRevenue, setAvgRevenue] = useState(0);
@@ -55,9 +68,10 @@ const AdminDashboard: React.FC = () => {
           productMonthly: result.data.totalProductMonthly,
           productInventory: result.data.totalInventory,
         });
-      } catch (err: any) {
-        if (err.response?.data) {
-          handleApiError(err.response.data);
+      } catch (err: unknown) {
+        const body = extractApiErrorBody(err);
+        if (body) {
+          handleApiError(body);
         } else {
           toast.error("Không thể kết nối tới máy chủ thống kê");
         }
@@ -71,22 +85,21 @@ const AdminDashboard: React.FC = () => {
     const fetchChartData = async () => {
       try {
         const result = await orderApi.getMonthlyData(selectedYear, true);
-        const apiData = result.data;
+        const apiData = result.data as MonthlyRevenueData[];
         setChartData({
-          labels: apiData.map((item: any) => item.month),
+          labels: apiData.map((item) => item.month),
           datasets: [
             {
               label: "Doanh thu (triệu VND)",
-              data: apiData.map((item: any) => item.revenue),
+              data: apiData.map((item) => item.revenue),
               backgroundColor: "rgba(94, 114, 228, 0.8)",
               borderRadius: 8,
             },
           ],
         });
 
-        // Tính tổng và trung bình doanh thu
         const total = apiData.reduce(
-          (sum: number, item: any) => sum + (item.revenue || 0),
+          (sum, item) => sum + (item.revenue || 0),
           0,
         );
         setTotalRevenue(total);
@@ -101,40 +114,39 @@ const AdminDashboard: React.FC = () => {
   }, [selectedYear]);
 
   // --- XỬ LÝ LỖI API ---
-  const handleApiError = (result: any) => {
-    const errorMap: Record<string, string> = {
-      "400022": "Tài khoản bị vô hiệu hóa!",
-      "400023": "Tài khoản bị khóa!",
-      "400024": "Chưa xác thực email!",
-    };
-    const msg = errorMap[result.errorCode] || "Lỗi truy cập dữ liệu";
+  const handleApiError = (body: import("../../types/api").ApiErrorBody) => {
+    const code = body.errorCode ?? "";
+    const msg =
+      (ERROR_MESSAGES as Record<string, string>)[code] ??
+      body.message ??
+      "Lỗi truy cập dữ liệu";
     toast.error(msg);
-    if (["400022", "400023", "400024"].includes(result.errorCode)) {
+    if (AUTH_BLOCKING_CODES.has(code)) {
       navigate("/exception?code=403");
     }
   };
 
   // --- CẤU HÌNH CHART OPTIONS (Y HỆT BẢN CŨ) ---
-  const chartOptions = {
+  const chartOptions: ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (context: any) =>
-            `Doanh thu: ${context.parsed.y.toLocaleString("vi-VN")} triệu VND`,
+          label: (context: TooltipItem<"bar">) =>
+            `Doanh thu: ${(context.parsed.y ?? 0).toLocaleString("vi-VN")} triệu VND`,
         },
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        grid: { color: "rgba(0, 0, 0, 0.1)", drawBorder: false },
+        grid: { color: "rgba(0, 0, 0, 0.1)" },
         ticks: {
           color: "#8392ab",
           font: { size: 11 },
-          callback: (value: any) => value + "M",
+          callback: (value) => value + "M",
         },
       },
       x: {
@@ -174,9 +186,21 @@ const AdminDashboard: React.FC = () => {
 
   if (loading)
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-xl font-bold text-[#1a237e]">
-          Đang tải dữ liệu báo cáo...
+      <div className="container-fluid">
+        <style>{skeletonStyles}</style>
+        <div className="row">
+          <div className="ms-3 mb-3 mt-4">
+            <div style={{ width: 180, height: 24, background: "#e0e0e0", borderRadius: 6, marginBottom: 8 }} />
+            <div style={{ width: 260, height: 14, background: "#ececec", borderRadius: 6 }} />
+          </div>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div className="col-xl-3 col-sm-6 mb-xl-0 mb-4" key={i}>
+              <SkeletonStatCard />
+            </div>
+          ))}
+          <div className="col-lg-12 col-md-12 mt-4 mb-4">
+            <SkeletonChart />
+          </div>
         </div>
       </div>
     );

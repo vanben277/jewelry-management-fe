@@ -16,11 +16,10 @@ const Header: React.FC = () => {
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const { cart, totalQuantity, totalPrice, removeFromCart } = useCart();
 
-  // ── Search states ────────────────────────────────────────────────────────
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [noResult, setNoResult] = useState(false);
+  const [, setNoResult] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -367,10 +366,10 @@ const Header: React.FC = () => {
                                   </div>
                                 </div>
 
-                                {/* Size & Chất liệu (Chỉ hiện khi có dữ liệu) */}
-                                {(item.size || item.goldType) && (
+                                {((item.size && item.size !== "N/A") ||
+                                  item.goldType) && (
                                   <div className="cart__size">
-                                    {item.size && (
+                                    {item.size && item.size !== "N/A" && (
                                       <span className="mr-2">
                                         Size: {item.size}
                                       </span>
@@ -381,7 +380,6 @@ const Header: React.FC = () => {
                                   </div>
                                 )}
 
-                                {/* Dòng số lượng và giá (Căn chỉnh theo ảnh bạn gửi) */}
                                 <div className="cart__num">
                                   <span className="text-[1.2rem] text-gray-500">
                                     Số lượng: {item.quantity}

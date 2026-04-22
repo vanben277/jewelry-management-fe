@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import navigationEmitter from "../lib/navigationEmitter";
 
-// Create axios instance with base configuration
 const axiosClient: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1",
   timeout: 30000,
@@ -9,7 +9,6 @@ const axiosClient: AxiosInstance = axios.create({
   },
 });
 
-// Request Interceptor: Attach JWT token to all requests
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
@@ -18,33 +17,25 @@ axiosClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
-// Response Interceptor: Handle global errors
 axiosClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
+  (response: AxiosResponse) => response,
   (error) => {
-    // Handle 401 Unauthorized - Token expired or invalid
-    if (error.response?.status === 401) {
-      // Clear all auth data
+    const status = error.response?.status;
+
+    if (status === 401) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userId");
-      localStorage.removeItem("auth"); // Remove old Basic Auth token
-
-      // Redirect to login page
-      window.location.href = "/login";
+      localStorage.removeItem("auth");
+      navigationEmitter.emit("/login");
     }
 
-    // Handle 403 Forbidden - Account banned/inactive
-    if (error.response?.status === 403) {
+    if (status === 403) {
       localStorage.clear();
-      window.location.href = "/exception?code=403";
+      navigationEmitter.emit("/exception?code=403");
     }
 
     return Promise.reject(error);

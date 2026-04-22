@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import ReCAPTCHA from "react-google-recaptcha";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster, toast } from "react-hot-toast";
 import { authApi } from "../../apis";
+import { ERROR_MESSAGES } from "../../constants/errorCodes";
+import { isApiError } from "../../types/api";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.warn("Vui lòng điền đầy đủ thông tin!");
+      toast("Vui lòng điền đầy đủ các trường bắt buộc (*)");
       return;
     }
 
@@ -97,39 +98,33 @@ const Login: React.FC = () => {
         const userInfo = result.data;
         if (!checkUserStatus(userInfo.status)) return;
 
-        // Lưu thông tin với JWT token
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
         localStorage.setItem("accessToken", userInfo.accessToken);
         localStorage.setItem("userId", userInfo.id.toString());
 
-        // Xóa auth cũ (Basic Auth) nếu có
         localStorage.removeItem("auth");
 
         toast.success(result.message || "Đăng nhập thành công!");
 
-        // Chuyển hướng sau 1 giây để user kịp nhìn thấy Toast thành công
         setTimeout(() => handleRedirect(userInfo.role), 1000);
       }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.errorMessage;
-      const errorCodes: any = {
-        "400021": "Tài Khoản hoặc Mật Khẩu không đúng. Vui lòng thử lại!",
-        "400022": "Tài khoản đã bị vô hiệu hóa!",
-        "400023": "Tài khoản đã bị khóa!",
-        "400024": "Tài khoản chưa được xác thực!",
-      };
-      toast.error(
-        errorCodes[errorMessage] ||
-          error.response?.data?.message ||
-          "Đăng nhập thất bại!",
-      );
+    } catch (error: unknown) {
+      if (isApiError(error)) {
+        const errorMessage = error.response?.data?.errorMessage ?? "";
+        toast.error(
+          (ERROR_MESSAGES as Record<string, string>)[errorMessage] ??
+            error.response?.data?.message ??
+            "Đăng nhập thất bại!",
+        );
+      } else {
+        toast.error("Đăng nhập thất bại!");
+      }
     }
   };
 
-  // GIỮ NGUYÊN GIAO DIỆN CỦA BẠN 100%
   return (
     <div className="w-full min-h-screen flex justify-center bg-[#f8fafc]">
-      <ToastContainer position="top-right" autoClose={3000} closeOnClick />
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
 
       <div className="bg-white relative max-w-[500px] w-full max-sm:w-full">
         <div className="flex w-full justify-center py-[10px]">

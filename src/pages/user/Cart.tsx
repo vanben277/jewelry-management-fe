@@ -1,48 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Bỏ Link vì không dùng
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
 import { AiFillDelete } from "react-icons/ai";
 import { productApi } from "../../apis";
-
-interface ProductSize {
-  size: number;
-  quantity: number;
-}
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
   const { cart, updateCart } = useCart();
 
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([]);
-  const [productSizes, setProductSizes] = useState<
-    Record<number, ProductSize[]>
-  >({});
+  const [productDetails, setProductDetails] = useState<Record<number, any>>({});
 
-  // 1. Load danh sách size cho tất cả sản phẩm
   useEffect(() => {
-    const loadSizes = async () => {
+    const loadProductDetails = async () => {
       const missingIds = cart
-        .filter((item) => item.size && !productSizes[item.productId])
+        .filter((item) => !productDetails[item.productId])
         .map((item) => item.productId);
 
       const uniqueIds = Array.from(new Set(missingIds));
+      if (uniqueIds.length === 0) return;
 
-      for (const id of uniqueIds) {
-        try {
-          const data = await productApi.getById(id);
-          const sizes = data.data.sizes ?? [];
-          setProductSizes((prev) => ({
-            ...prev,
-            [id]: sizes,
-          }));
-        } catch (error) {
-          console.error("Lỗi lấy size sp:", id);
+      const results = await Promise.allSettled(
+        uniqueIds.map((id) => productApi.getById(id)),
+      );
+
+      const newDetails: Record<number, any> = {};
+
+      results.forEach((result, index) => {
+        const id = uniqueIds[index];
+        if (result.status === "fulfilled") {
+          newDetails[id] = result.value.data;
+        } else {
+          console.error("Lỗi lấy thông tin sp:", id);
         }
-      }
+      });
+      setProductDetails((prev) => ({ ...prev, ...newDetails }));
     };
 
-    loadSizes();
+    loadProductDetails();
   }, [cart]);
 
   // 2. Logic Checkbox
@@ -61,59 +57,58 @@ const Cart: React.FC = () => {
   };
 
   // 3. Logic Cập nhật số lượng
-  const handleUpdateQuantity = async (index: number, delta: number) => {
+  const handleUpdateQuantity = (index: number, delta: number) => {
     const item = cart[index];
     const newQty = Math.max(1, item.quantity + delta);
     if (newQty === item.quantity) return;
 
-    try {
-      const data = await productApi.getById(item.productId);
-      const productData = data.data;
-
-      if (item.size && item.size !== "N/A") {
-        const sizes = productData.sizes ?? [];
-        const sizeObj = sizes.find(
-          (s: any) => s.size.toString() === item.size?.toString(),
-        );
-
-        if (!sizeObj || newQty > sizeObj.quantity) {
-          toast.error("Số lượng vượt quá tồn kho của size này.");
-          return;
-        }
-      } else {
-        if (newQty > (productData.quantity ?? 0)) {
-          toast.error("Số lượng vượt quá tồn kho.");
-          return;
-        }
-      }
-
-      const newCart = [...cart];
-      newCart[index].quantity = newQty;
-      updateCart(newCart);
-    } catch (error) {
-      toast.error("Không thể kiểm tra tồn kho.");
+    const productData = productDetails[item.productId];
+    if (!productData) {
+      toast.error("Đang tải dữ liệu tồn kho, vui lòng thử lại sau.");
+      return;
     }
+
+    if (item.size && item.size !== "N/A") {
+      const sizes = productData.sizes ?? [];
+      const sizeObj = sizes.find(
+        (s: any) => s.size.toString() === item.size?.toString(),
+      );
+
+      if (!sizeObj || newQty > sizeObj.quantity) {
+        toast.error("Số lượng vượt quá tồn kho của size này.");
+        return;
+      }
+    } else {
+      if (newQty > (productData.quantity ?? 0)) {
+        toast.error("Số lượng vượt quá tồn kho.");
+        return;
+      }
+    }
+
+    const newCart = [...cart];
+    newCart[index].quantity = newQty;
+    updateCart(newCart);
   };
 
   // 4. Đổi Size
-  const handleUpdateSize = async (index: number, newSize: string) => {
-    try {
-      const data = await productApi.getById(cart[index].productId);
-      const sizes = data.data.sizes ?? [];
-      const sizeObj = sizes.find(
-        (s: any) => s.size.toString() === newSize.toString(),
-      );
+  const handleUpdateSize = (index: number, newSize: string) => {
+    const productData = productDetails[cart[index].productId];
+    if (!productData) {
+      toast.error("Đang tải dữ liệu sản phẩm.");
+      return;
+    }
+    const sizes = productData.sizes ?? [];
+    const sizeObj = sizes.find(
+      (s: any) => s.size.toString() === newSize.toString(),
+    );
 
-      if (sizeObj) {
-        const newCart = [...cart];
-        newCart[index].size = newSize;
-        if (newCart[index].quantity > sizeObj.quantity) {
-          newCart[index].quantity = sizeObj.quantity;
-        }
-        updateCart(newCart);
+    if (sizeObj) {
+      const newCart = [...cart];
+      newCart[index].size = newSize;
+      if (newCart[index].quantity > sizeObj.quantity) {
+        newCart[index].quantity = sizeObj.quantity;
       }
-    } catch (error) {
-      toast.error("Lỗi kiểm tra size.");
+      updateCart(newCart);
     }
   };
 
@@ -170,11 +165,6 @@ const Cart: React.FC = () => {
           />
           <p>Giỏ hàng trống</p>
         </div>
-        <style>{`
-        .app { background: #f1f0f1; min-height: unset;}
-        body { background: #fff; display: unset; }
-        .m-12, .m-32 { margin: 0 !important; }
-      `}</style>
       </div>
     );
   }
@@ -231,13 +221,13 @@ const Cart: React.FC = () => {
                               handleUpdateSize(index, e.target.value)
                             }
                           >
-                            {productSizes[item.productId]?.map((s) => (
-                              <option key={s.size} value={s.size}>
-                                {s.size}
-                              </option>
-                            )) || (
-                              <option value={item.size}>{item.size}</option>
-                            )}
+                            {productDetails[item.productId]?.sizes?.map(
+                              (s: any) => (
+                                <option key={s.size} value={s.size}>
+                                  {s.size}
+                                </option>
+                              ),
+                            ) || <option value={item.size}>{item.size}</option>}
                           </select>
                         </div>
                       )}
@@ -304,11 +294,11 @@ const Cart: React.FC = () => {
           </button>
         </div>
       </div>
-
       <style>{`
         .app { background: #f1f0f1; min-height: unset;}
         body { background: #fff; display: unset; }
         .m-12, .m-32 { margin: 0 !important; }
+        #footer { background: #fff;}
       `}</style>
     </div>
   );

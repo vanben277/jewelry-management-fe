@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { CartItem } from "../types";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 interface CartContextType {
   cart: CartItem[];
-  // 2. Sửa any thành kiểu dữ liệu cụ thể
   addToCart: (item: CartItem) => void;
   updateCart: (newCart: CartItem[]) => void;
   removeFromCart: (index: number) => void;
@@ -16,20 +16,30 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const isCartItemArray = (value: unknown): value is CartItem[] => {
+  if (!Array.isArray(value)) return false;
+  return value.every(
+    (item) =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as CartItem).productId === "number" &&
+      typeof (item as CartItem).name === "string" &&
+      typeof (item as CartItem).price === "number" &&
+      typeof (item as CartItem).quantity === "number",
+  );
+};
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem("cart");
-    try {
-      return savedCart ? JSON.parse(savedCart) : [];
-    } catch (e) {
-      return [];
-    }
-  });
+  const [cart, setCart] = useLocalStorage<CartItem[]>(
+    "cart",
+    [],
+    isCartItemArray,
+  );
 
+  // Thông báo cho các tab khác khi giỏ hàng thay đổi
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
     window.dispatchEvent(new Event("storage"));
   }, [cart]);
 
@@ -61,7 +71,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (existingIndex !== -1) {
         const newCart = [...prevCart];
-        newCart[existingIndex].quantity += item.quantity || 1;
+        newCart[existingIndex] = {
+          ...newCart[existingIndex],
+          quantity: newCart[existingIndex].quantity + (item.quantity || 1),
+        };
         notifySuccess(`Cập nhật số lượng thành công`);
         return newCart;
       }
@@ -72,16 +85,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateCart = (newCart: CartItem[]) => setCart(newCart);
+
   const removeFromCart = (index: number) => {
     setCart((prevCart) => prevCart.filter((_, i) => i !== index));
     notifySuccess("Đã xóa sản phẩm");
   };
+
   const clearCart = () => setCart([]);
 
-  const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
+  const totalQuantity = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart],
+  );
+
+  const totalPrice = useMemo(
+    () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [cart],
   );
 
   return (
