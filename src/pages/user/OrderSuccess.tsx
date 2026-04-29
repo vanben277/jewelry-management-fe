@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { paymentApi } from "../../apis";
 import { STORAGE_KEYS } from '../../constants';
+import BankTransferQR from "../../components/user/BankTransferQR";
 
 interface OrderItem {
   productName: string;
@@ -16,6 +17,7 @@ interface OrderData {
   createAt: string;
   totalPrice: number;
   paymentMethod?: string;
+  qrCodeUrl?: string;
   items: OrderItem[];
 }
 
@@ -91,7 +93,7 @@ const OrderSuccess: React.FC = () => {
   });
 
   return (
-    <div className="app">
+    <div className="order-success-container">
       <div className="grid wide">
         <div className="row">
           <div className="c-12 l-12 m-12">
@@ -195,6 +197,14 @@ const OrderSuccess: React.FC = () => {
               </div>
             )}
 
+            {order.paymentMethod === "BANK_TRANSFER" && order.qrCodeUrl && (
+              <BankTransferQR
+                qrCodeUrl={order.qrCodeUrl}
+                orderId={order.id}
+                amount={order.totalPrice}
+              />
+            )}
+
             <div className="navigation">
               <Link to="/containers" className="btn btn-back">
                 Quay lại
@@ -208,93 +218,95 @@ const OrderSuccess: React.FC = () => {
       </div>
 
       <style>{`
-        .app {
+        .app { background: #fff; }
+        body { background: #fff; display: unset; }
+        .order-success-container {
             background: #fff;
             min-height: unset;
+            padding: 20px 0;
         }
-        body {
-            background: #fff;
-            display: unset;
-        }  
-        .header {
+        
+        .order-success-container .header {
             margin-bottom: 20px;
         }
 
-        .header::after {
+        .order-success-container .header::after {
             content: unset;
         }
 
-        .header-text {
+        .order-success-container .header-text {
             font-size: 1.8rem;
             margin-bottom: 10px;
             color: #252B61;
             font-weight: 600;
         }
-        .order-info {
+        .order-success-container .order-info {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-bottom: 30px;
         }
-        .info-item {
+        .order-success-container .info-item {
             padding: 5px 0;
         }
-        .info-label {
+        .order-success-container .info-label {
             font-size: 12px;
             color: #666;
             margin-bottom: 3px;
         }
-        .info-value {
+        .order-success-container .info-value {
             font-size: 14px;
             font-weight: bold;
+            text-align : left;
         }
-        .order-title {
+        .order-success-container .order-title {
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 20px;
         }
-        table {
+        .order-success-container table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+        .order-success-container th, 
+        .order-success-container td {
             padding: 12px 8px;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
-        th {
+        .order-success-container th {
             background-color: #f9f9f9;
             font-weight: normal;
             font-size: 14px;
             color: #666;
         }
-        td {
+        .order-success-container td {
             font-size: 14px;
         }
-        .product-cell {
+        .order-success-container .product-cell {
             width: 60%;
         }
-        .price-cell {
+        .order-success-container .price-cell {
             width: 40%;
             text-align: right;
         }
-        .note {
+        .order-success-container .note {
             margin-top: 10px;
             font-size: 14px;
             color: #666;
         }
-        .navigation {
+        .order-success-container .navigation {
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
         }
 
-        .btn-back:hover, 
-        .btn-continue:hover {
+        .order-success-container .btn-back:hover, 
+        .order-success-container .btn-continue:hover {
             background-color: #0c1aaa;
         }
 
-        .btn {
+        .order-success-container .btn {
             background-color: #1a237e;
             color: white !important;
             padding: 10px 20px;
@@ -305,19 +317,17 @@ const OrderSuccess: React.FC = () => {
             align-items: center;
             border: none;
         }
-        .qr-container {
+        .order-success-container .qr-container {
             text-align: center;
             margin-top: 30px;
         }
 
-        .m-12 {
+        .order-success-container .m-12 {
             margin: 0 !important;
         }
 
-
-
         @media (max-width: 768px) {
-            .order-info {
+            .order-success-container .order-info {
                 grid-template-columns: repeat(2, 1fr);
             }
         }

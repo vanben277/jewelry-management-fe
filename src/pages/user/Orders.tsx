@@ -6,6 +6,7 @@ import { orderApi } from "../../apis";
 import { Order } from "../../types";
 import { STORAGE_KEYS } from '../../constants';
 import { ACCOUNT_STATUS } from '../../constants';
+import "../../assets/css/orders.css";
 
 const statusMapping: Record<string, string> = {
   pending: "Chờ xác nhận",
@@ -27,13 +28,19 @@ const Orders: React.FC = () => {
     setLoading(true);
     try {
       const res = await orderApi.getMyOrders(Number(accountId), status);
+      console.log("Orders API response:", res); // Debug log
   
       if (res.data) {
         const allOrders: Order[] = res.data.content ?? [];
+        console.log("Orders loaded:", allOrders.length); // Debug log
         setOrders(allOrders);
+      } else {
+        console.warn("No data in response"); // Debug log
+        setOrders([]);
       }
     } catch (error: any) {
       console.error("Lỗi tải đơn hàng:", error);
+      setOrders([]); // Set empty array on error
       if (error.response?.data?.status && error.response.data.status !== ACCOUNT_STATUS.ACTIVE) {
         handleAccountIssue(error.response.data.status);
       }

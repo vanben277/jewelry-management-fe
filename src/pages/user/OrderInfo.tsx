@@ -323,9 +323,18 @@ const OrderInfo: React.FC = () => {
       <style>{`
         .app { background: #fff; }
         body { background: #fff; display: unset; }
-        .m-12, .m-32 { margin: 0 !important; }
-        form { padding: 0; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; outline: none; margin-bottom: 10px; }
+        .order-container { background: #fff; }
+        .order-container .m-12, 
+        .order-container .m-32 { margin: 0 !important; }
+        .order-container form { padding: 0; }
+        .order-container input { 
+          width: 100%; 
+          padding: 12px; 
+          border: 1px solid #ddd; 
+          border-radius: 6px; 
+          outline: none; 
+          margin-bottom: 10px; 
+        }
       `}</style>
     </div>
   );

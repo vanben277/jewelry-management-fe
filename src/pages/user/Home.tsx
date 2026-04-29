@@ -73,14 +73,15 @@ const Home: React.FC = () => {
           </div>
           <div className="row">
             {topSellingProducts.map((p) => {
+              const productId = p.productId || p.id;
               const primary =
                 p.images?.find((img) => img.isPrimary)?.imageUrl || "";
               const hover =
                 p.images?.find((img) => !img.isPrimary)?.imageUrl || primary;
               return (
                 <Link
-                  key={p.id}
-                  to={`/product-detailed/${p.id}`}
+                  key={productId}
+                  to={`/product-detailed/${productId}`}
                   className="col l-2-9 m-3-9 c-5-9 container__block__new"
                 >
                   <div className="container__blocknew--item">

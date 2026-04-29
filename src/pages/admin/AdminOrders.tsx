@@ -15,6 +15,7 @@ import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { orderApi } from "../../apis";
 import { Order } from "../../types";
 import { PAGINATION } from '../../constants';
+import BankTransferQR from "../../components/user/BankTransferQR";
 
 const AdminOrders: React.FC = () => {
   // --- States ---
@@ -480,6 +481,20 @@ const AdminOrders: React.FC = () => {
                   </div>
                 ))}
               </div>
+
+              {/* QR Code Section for Bank Transfer */}
+              {selectedOrder.paymentMethod === "BANK_TRANSFER" && selectedOrder.qrCodeUrl && (
+                <div className="mt-4">
+                  <h6 className="text-[1.5rem] font-bold border-bottom pb-2 mb-3">
+                    Thông tin thanh toán
+                  </h6>
+                  <BankTransferQR
+                    qrCodeUrl={selectedOrder.qrCodeUrl}
+                    orderId={selectedOrder.id}
+                    amount={selectedOrder.totalPrice}
+                  />
+                </div>
+              )}
 
               <div className="text-end mt-4">
                 <h4 className="text-[2rem] font-bold text-danger">

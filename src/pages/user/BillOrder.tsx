@@ -5,6 +5,7 @@ import { GoHome } from "react-icons/go";
 import toast from "react-hot-toast";
 import { orderApi } from "../../apis";
 import { Order } from "../../types";
+import BankTransferQR from "../../components/user/BankTransferQR";
 
 const statusMapping: Record<string, string> = {
   pending: "Chờ xác nhận",
@@ -181,6 +182,17 @@ const BillOrder: React.FC = () => {
               </span>
             </div>
           </div>
+
+          {/* Section: QR Code for Bank Transfer */}
+          {order.paymentMethod === "BANK_TRANSFER" && order.qrCodeUrl && (
+            <div className="order-section">
+              <BankTransferQR
+                qrCodeUrl={order.qrCodeUrl}
+                orderId={order.id}
+                amount={order.totalPrice}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

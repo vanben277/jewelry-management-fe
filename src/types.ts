@@ -158,8 +158,10 @@ export interface Order {
   customerPhone: string;
   customerAddress: string;
   status: string;
+  paymentMethod?: PaymentMethod;
   items: OrderItem[];
   totalPrice: number;
+  qrCodeUrl?: string;
   createAt: string;
   updateAt?: string;
 }

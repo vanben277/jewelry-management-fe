@@ -180,6 +180,9 @@ const ProductDetailed: React.FC = () => {
         return;
       }
 
+      // ✅ Add to cart first (so user can see it in cart)
+      addToCart(cartItem);
+
       // ✅ Save with checksum to prevent tampering
       const checkoutItem = { ...cartItem, selected: true };
       saveCheckoutWithChecksum([checkoutItem], STORAGE_KEYS.CHECKOUT_ITEMS, 'checkoutChecksum');
@@ -514,15 +517,13 @@ const ProductDetailed: React.FC = () => {
         </div>
       </div>
       <style>{`
-        .app {
+        .app { background: #fff; }
+        body { background: #fff; display: unset; }
+        .b__container {
             background: #fff;
         }
-        body {
-            background: #fff;
-            display: unset;
-        }
-        .m-12, .m-32
-        {
+        .b__container .m-12, 
+        .b__container.m-32 {
             margin: 0 !important;
         }
       `}</style>
