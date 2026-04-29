@@ -1,5 +1,6 @@
 import React from "react";
 import { useLocation, Link } from "react-router-dom";
+import { STORAGE_KEYS } from '../../constants';
 
 interface HeadProps {
   onToggleSidenav?: () => void;
@@ -8,7 +9,7 @@ interface HeadProps {
 const Head: React.FC<HeadProps> = ({ onToggleSidenav }) => {
   const location = useLocation();
 
-  const userInfoRaw = localStorage.getItem("userInfo");
+  const userInfoRaw = localStorage.getItem(STORAGE_KEYS.USER_INFO);
   const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
 
   const userAvatar =

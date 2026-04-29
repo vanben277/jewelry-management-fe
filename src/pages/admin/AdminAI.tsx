@@ -10,6 +10,7 @@ import {
 import { MdRefresh } from "react-icons/md";
 import toast from "react-hot-toast";
 import { aiApi } from "../../apis";
+import { STORAGE_KEYS } from '../../constants';
 
 interface ChatSession {
   sessionId: string;
@@ -80,7 +81,7 @@ const AdminAI: React.FC = () => {
   const [analyticsInput, setAnalyticsInput] = useState("");
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const analyticsEndRef = useRef<HTMLDivElement>(null);
-  const analyticsSessionId = "ADMIN_" + (localStorage.getItem("userId") || "0");
+  const analyticsSessionId = "ADMIN_" + (localStorage.getItem(STORAGE_KEYS.USER_ID) || "0");
 
   // Load sessions
   const loadSessions = async () => {

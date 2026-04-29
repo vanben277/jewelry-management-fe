@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaUser, FaCheck, FaTimes } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { authApi } from "../../apis";
+import { getPasswordRequirements, getPasswordStrength, getPasswordStrengthClass } from "../../utils";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -37,16 +38,10 @@ const Register: React.FC = () => {
 
   useEffect(() => {
     const pass = formData.password;
-    const reqs = {
-      length: pass.length >= 8 && pass.length <= 16,
-      lowercase: /[a-z]/.test(pass),
-      uppercase: /[A-Z]/.test(pass),
-      number: /\d/.test(pass),
-      special: /[@$!%*?&]/.test(pass),
-    };
+    const reqs = getPasswordRequirements(pass);
     setPasswordReqs(reqs);
 
-    const score = Object.values(reqs).filter(Boolean).length;
+    const score = getPasswordStrength(pass);
     setPasswordStrength(score);
   }, [formData.password]);
 
@@ -118,10 +113,7 @@ const Register: React.FC = () => {
   };
 
   const getStrengthClass = () => {
-    if (passwordStrength <= 1) return "bg-red-500";
-    if (passwordStrength <= 2) return "bg-orange-500";
-    if (passwordStrength <= 4) return "bg-yellow-500";
-    return "bg-green-500";
+    return getPasswordStrengthClass(formData.password);
   };
 
   return (
@@ -285,17 +277,20 @@ const Register: React.FC = () => {
 
           {/* Tài khoản */}
           <div className="mt-[18px] mx-[19px]">
-            <label className="block text-[1.6rem] mb-2">
-              Tài khoản <span className="text-[#dc3545]">*</span>
-            </label>
-            <input
-              type="text"
-              className="w-full h-[33px] p-[24px] text-[14px] border border-gray-300 !rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0d6efd] focus:ring-offset-2 transition-all"
-              name="userName"
-              value={formData.userName}
-              onChange={handleInputChange}
-              placeholder="4-30 ký tự"
-            />
+          <label htmlFor="userName" className="block text-[1.6rem] mb-2">
+            Tài khoản <span className="text-[#dc3545]" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="userName"
+            type="text"
+            aria-label="Tên tài khoản"
+            aria-required="true"
+            className="w-full h-[33px] p-[24px] text-[14px] border border-gray-300 !rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0d6efd] focus:ring-offset-2 transition-all"
+            name="userName"
+            value={formData.userName}
+            onChange={handleInputChange}
+            placeholder="4-30 ký tự"
+          />
           </div>
 
           {/* Mật khẩu */}

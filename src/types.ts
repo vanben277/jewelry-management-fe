@@ -5,6 +5,24 @@ export interface ApiResponse<T> {
   errorMessage?: string;
 }
 
+// API Error Types
+export interface ApiErrorResponse {
+  errorCode?: string;
+  errorMessage?: string;
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+
+export interface ApiError {
+  response?: {
+    status?: number;
+    statusText?: string;
+    data?: ApiErrorResponse;
+  };
+  message?: string;
+  code?: string;
+}
+
 // Authentication
 export interface LoginResponse {
   id: number;

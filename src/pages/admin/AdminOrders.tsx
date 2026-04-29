@@ -14,6 +14,7 @@ import { FaInfoCircle } from "react-icons/fa";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { orderApi } from "../../apis";
 import { Order } from "../../types";
+import { PAGINATION } from '../../constants';
 
 const AdminOrders: React.FC = () => {
   // --- States ---
@@ -28,7 +29,7 @@ const AdminOrders: React.FC = () => {
     customerPhone: "",
     customerAddress: "",
     status: "",
-    pageSize: 10,
+    pageSize: PAGINATION.ADMIN_PAGE_SIZE,
     pageNumber: 0,
   });
 

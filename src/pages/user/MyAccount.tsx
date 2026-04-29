@@ -17,6 +17,8 @@ import { GoHome } from "react-icons/go";
 import { IoLogOutOutline } from "react-icons/io5";
 import BottomNav from "../../components/user/BottomNav";
 import { accountApi, authApi } from "../../apis";
+import { STORAGE_KEYS, ACCOUNT_STATUS } from '../../constants';
+import { isStrongPassword, getPasswordStrength, getPasswordStrengthLabel, getPasswordStrengthTextClass } from "../../utils";
 
 interface UserData {
   id: number;
@@ -49,8 +51,8 @@ const MyAccount: React.FC = () => {
     confirm: false,
   });
 
-  const auth = localStorage.getItem("accessToken");
-  const userId = localStorage.getItem("userId");
+  const auth = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
 
   // 1. Load thông tin User
   useEffect(() => {
@@ -65,7 +67,7 @@ const MyAccount: React.FC = () => {
         const res = await accountApi.getById(Number(userId));
 
         if (res.data) {
-          if (res.data.status !== "ACTIVE") {
+          if (res.data.status !== ACCOUNT_STATUS.ACTIVE) {
             handleAccountStatus(res.data.status);
             return;
           }
@@ -91,24 +93,7 @@ const MyAccount: React.FC = () => {
     navigate("/exception?code=403");
   };
 
-  // 2. Logic Validation Mật khẩu
-  const getPasswordStrength = (pass: string) => {
-    let score = 0;
-    if (pass.length >= 8 && pass.length <= 16) score++;
-    if (/[a-z]/.test(pass)) score++;
-    if (/[A-Z]/.test(pass)) score++;
-    if (/\d/.test(pass)) score++;
-    if (/[@$!%*?&]/.test(pass)) score++;
-    return score;
-  };
-
-  const validatePassword = (pass: string) => {
-    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/.test(
-      pass,
-    );
-  };
-
-  // 3. Xử lý Đăng xuất
+  // 2. Xử lý Đăng xuất
   const handleLogout = () => {
     if (window.confirm("Bạn chắc chắn muốn đăng xuất?")) {
       localStorage.clear();
@@ -117,10 +102,10 @@ const MyAccount: React.FC = () => {
     }
   };
 
-  // 4. Xử lý Đổi mật khẩu
+  // 3. Xử lý Đổi mật khẩu
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validatePassword(passwordForm.newPassword)) {
+    if (!isStrongPassword(passwordForm.newPassword)) {
       toast.error("Mật khẩu mới không đúng định dạng!");
       return;
     }
@@ -350,25 +335,14 @@ const MyAccount: React.FC = () => {
                 <div className="mt-2">
                   <div className="h-1.5 w-full bg-gray-200 rounded">
                     <div
-                      className={`h-full rounded transition-all ${
-                        getPasswordStrength(passwordForm.newPassword) <= 2
-                          ? "bg-red-500"
-                          : getPasswordStrength(passwordForm.newPassword) <= 4
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
-                      }`}
+                      className={`h-full rounded transition-all ${getPasswordStrengthTextClass(passwordForm.newPassword).replace('text-', 'bg-')}`}
                       style={{
                         width: `${(getPasswordStrength(passwordForm.newPassword) / 5) * 100}%`,
                       }}
                     ></div>
                   </div>
                   <p className="text-xs mt-1">
-                    Độ mạnh:{" "}
-                    {getPasswordStrength(passwordForm.newPassword) <= 2
-                      ? "Yếu"
-                      : getPasswordStrength(passwordForm.newPassword) <= 4
-                        ? "Trung bình"
-                        : "Mạnh"}
+                    Độ mạnh: {getPasswordStrengthLabel(passwordForm.newPassword)}
                   </p>
                 </div>
               )}

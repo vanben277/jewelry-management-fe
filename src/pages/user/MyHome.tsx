@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BottomNav from "../../components/user/BottomNav";
+import { STORAGE_KEYS } from '../../constants';
 
 interface UserInfo {
   firstName: string;
@@ -12,7 +13,7 @@ const MyHome: React.FC = () => {
   const [fullName, setFullName] = useState<string>("Khách hàng");
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("userInfo");
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER_INFO);
     if (!savedUser) {
       alert("Vui lòng đăng nhập");
       navigate("/login");

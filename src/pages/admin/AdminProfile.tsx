@@ -13,6 +13,8 @@ import {
 } from "react-icons/fa";
 import { accountApi, authApi } from "../../apis";
 import { Account } from "../../types";
+import { STORAGE_KEYS, ACCOUNT_STATUS } from '../../constants';
+import { getPasswordRequirements, getPasswordStrength, getPasswordStrengthLabel } from "../../utils";
 
 const AdminProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ const AdminProfile: React.FC = () => {
     confirm: false,
   });
 
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
 
   // 1. Load thông tin tài khoản
   useEffect(() => {
@@ -45,7 +47,7 @@ const AdminProfile: React.FC = () => {
       try {
         const response = await accountApi.getById(Number(userId));
         if (response.data) {
-          if (response.data.status !== "ACTIVE") {
+          if (response.data.status !== ACCOUNT_STATUS.ACTIVE) {
             toast.error("Tài khoản không khả dụng");
             navigate("/exception?code=403");
             return;
@@ -66,24 +68,10 @@ const AdminProfile: React.FC = () => {
     fetchUser();
   }, [userId, navigate]);
 
-  // 2. Logic kiểm tra độ mạnh mật khẩu (Port từ jQuery sang React)
-  const getRequirements = (pass: string) => ({
-    length: pass.length >= 8 && pass.length <= 16,
-    lowercase: /[a-z]/.test(pass),
-    uppercase: /[A-Z]/.test(pass),
-    number: /\d/.test(pass),
-    special: /[@$!%*?&]/.test(pass),
-  });
-
-  const getStrength = (pass: string) => {
-    const reqs = getRequirements(pass);
-    return Object.values(reqs).filter(Boolean).length;
-  };
-
-  // 3. Xử lý đổi mật khẩu
+  // 2. Xử lý đổi mật khẩu
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const strength = getStrength(passwordForm.newPassword);
+    const strength = getPasswordStrength(passwordForm.newPassword);
 
     if (strength < 5) {
       toast.error("Mật khẩu mới chưa đủ mạnh!");
@@ -109,8 +97,8 @@ const AdminProfile: React.FC = () => {
 
   if (loading) return <div className="p-4">Đang tải...</div>;
 
-  const reqs = getRequirements(passwordForm.newPassword);
-  const strengthScore = getStrength(passwordForm.newPassword);
+  const reqs = getPasswordRequirements(passwordForm.newPassword);
+  const strengthScore = getPasswordStrength(passwordForm.newPassword);
 
   return (
     <div className="container-fluid">
@@ -349,12 +337,7 @@ const AdminProfile: React.FC = () => {
                               ></div>
                             </div>
                             <div className="text-[12px] mt-1 text-muted">
-                              Độ mạnh:{" "}
-                              {strengthScore <= 2
-                                ? "Yếu"
-                                : strengthScore <= 4
-                                  ? "Trung bình"
-                                  : "Mạnh"}
+                              Độ mạnh: {getPasswordStrengthLabel(passwordForm.newPassword)}
                             </div>
                           </div>
                         )}

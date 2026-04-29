@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { paymentApi } from "../../apis";
+import { STORAGE_KEYS } from '../../constants';
 
 interface OrderItem {
   productName: string;
@@ -22,7 +23,7 @@ const OrderSuccess: React.FC = () => {
   const navigate = useNavigate();
 
   const [order] = useState<OrderData | null>(() => {
-    const savedOrder = localStorage.getItem("lastOrder");
+    const savedOrder = localStorage.getItem(STORAGE_KEYS.LAST_ORDER);
     if (savedOrder) {
       try {
         const parsedOrder: OrderData = JSON.parse(savedOrder);
@@ -44,12 +45,12 @@ const OrderSuccess: React.FC = () => {
     }
 
     // Xóa localStorage ngay sau khi state đã giữ dữ liệu
-    localStorage.removeItem("lastOrder");
+    localStorage.removeItem(STORAGE_KEYS.LAST_ORDER);
   }, [order, navigate]);
 
   const handleZaloPay = async (e: React.MouseEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
     if (!token) {
       toast.error("Bạn cần đăng nhập để thanh toán!");

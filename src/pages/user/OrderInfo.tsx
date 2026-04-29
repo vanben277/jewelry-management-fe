@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
 import { orderApi } from "../../apis";
-import { PaymentMethod } from "../../types";
+import { PaymentMethod, Account, ApiError } from "../../types";
+import { safeParseJSON, validatePhone, getErrorMessage, loadCheckoutWithVerification, clearCheckoutData } from "../../utils";
+import { STORAGE_KEYS, PAYMENT_METHODS } from "../../constants";
 
 interface CheckoutItem {
   productId: number;
@@ -15,6 +17,15 @@ interface CheckoutItem {
   size?: string | number;
 }
 
+const validateOrderItems = (items: CheckoutItem[]) => {
+  return items.every(
+    (item) =>
+      item.quantity > 0 &&
+      Number.isInteger(item.quantity) &&
+      item.productId > 0
+  );
+};
+
 const OrderInfo: React.FC = () => {
   const navigate = useNavigate();
   const { clearCart } = useCart();
@@ -22,7 +33,7 @@ const OrderInfo: React.FC = () => {
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD"); // ✅ thêm state
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PAYMENT_METHODS.COD); // ✅ Use constant
 
   const [formData, setFormData] = useState({
     fullname: "",
@@ -31,11 +42,20 @@ const OrderInfo: React.FC = () => {
   });
 
   useEffect(() => {
-    const items = JSON.parse(localStorage.getItem("checkoutItems") || "[]");
-    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "null");
+    // ✅ Load and verify checkout items with checksum
+    const items = loadCheckoutWithVerification(STORAGE_KEYS.CHECKOUT_ITEMS, 'checkoutChecksum');
+    const userInfo = safeParseJSON<Account | null>(STORAGE_KEYS.USER_INFO, null);
 
-    if (items.length === 0) {
-      toast.error("Giỏ hàng trống. Vui lòng thêm sản phẩm.");
+    // If items is null, it means tampering was detected or no items found
+    if (!items || items.length === 0) {
+      if (items === null) {
+        // Tampering detected
+        toast.error("⚠️ Dữ liệu đơn hàng không hợp lệ. Vui lòng chọn lại sản phẩm.");
+        clearCheckoutData(STORAGE_KEYS.CHECKOUT_ITEMS, 'checkoutChecksum');
+      } else {
+        // No items
+        toast.error("Giỏ hàng trống. Vui lòng thêm sản phẩm.");
+      }
       navigate("/cart");
       return;
     }
@@ -75,7 +95,17 @@ const OrderInfo: React.FC = () => {
       return;
     }
 
-    if (!localStorage.getItem("accessToken")) {
+    if (!validatePhone(formData.phone).isValid) {
+      toast.error("Số điện thoại không hợp lệ");
+      return;
+    }
+
+    if (!validateOrderItems(checkoutItems)) {
+      toast.error("Giỏ hàng có sản phẩm không hợp lệ");
+      return;
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)) {
       navigate("/login");
       return;
     }
@@ -96,14 +126,22 @@ const OrderInfo: React.FC = () => {
 
     try {
       const resData = await orderApi.create(orderData);
-      localStorage.setItem("lastOrder", JSON.stringify(resData.data));
-      localStorage.removeItem("checkoutItems");
+      localStorage.setItem(STORAGE_KEYS.LAST_ORDER, JSON.stringify(resData.data));
+      
+      // ✅ Clear checkout data and checksum after successful order
+      clearCheckoutData(STORAGE_KEYS.CHECKOUT_ITEMS, 'checkoutChecksum');
+      
       clearCart();
       navigate("/order-success");
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = error as ApiError;
+      const errorMessage = getErrorMessage(error);
       const errorCode =
-        error.response?.data?.errorCode || error.response?.status || "500";
-      toast.error(error.response?.data?.message || "Đặt hàng thất bại");
+        apiError.response?.data?.errorCode || 
+        apiError.response?.status?.toString() || 
+        "500";
+      
+      toast.error(errorMessage);
       navigate(`/exception?code=${errorCode}`);
     } finally {
       setLoading(false);

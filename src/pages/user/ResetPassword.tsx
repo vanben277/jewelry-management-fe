@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { authApi } from "../../apis/auth.api";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
+import { isStrongPassword, getPasswordStrength, getPasswordStrengthLabel, getPasswordStrengthTextClass } from "../../utils";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -25,23 +26,6 @@ const ResetPassword = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPass, setShowPass] = useState({ new: false, confirm: false });
-
-  // --- Logic Helper ---
-  const isValidPassword = (password: string) => {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/;
-    return passwordRegex.test(password);
-  };
-
-  const getPasswordStrength = (password: string) => {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-    if (/\d/.test(password)) strength++;
-    if (/[@$!%*?&]/.test(password)) strength++;
-    if (password.length >= 12) strength++;
-    return strength;
-  };
 
   // --- Handlers ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +54,7 @@ const ResetPassword = () => {
     if (formData.newPassword.trim() === "") {
       newErrors.newPassword = "Vui lòng nhập mật khẩu mới!";
       isValid = false;
-    } else if (!isValidPassword(formData.newPassword)) {
+    } else if (!isStrongPassword(formData.newPassword)) {
       newErrors.newPassword =
         "Mật khẩu phải có 8-16 ký tự, chứa ít nhất: 1 chữ thường, 1 chữ hoa, 1 số, 1 ký tự đặc biệt (@$!%*?&)";
       isValid = false;
@@ -226,20 +210,8 @@ const ResetPassword = () => {
                   </div>
                   <p className="text-[1.2rem] mt-1 font-medium">
                     Độ mạnh:{" "}
-                    <span
-                      className={
-                        getPasswordStrength(formData.newPassword) <= 2
-                          ? "text-red-500"
-                          : getPasswordStrength(formData.newPassword) <= 4
-                            ? "text-yellow-600"
-                            : "text-green-600"
-                      }
-                    >
-                      {getPasswordStrength(formData.newPassword) <= 2
-                        ? "Yếu"
-                        : getPasswordStrength(formData.newPassword) <= 4
-                          ? "Trung bình"
-                          : "Mạnh"}
+                    <span className={getPasswordStrengthTextClass(formData.newPassword)}>
+                      {getPasswordStrengthLabel(formData.newPassword)}
                     </span>
                   </p>
                 </div>

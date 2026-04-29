@@ -1,10 +1,13 @@
 import React, { useState, useEffect, TouchEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import DOMPurify from 'dompurify';
 import { FaStar, FaCircleCheck, FaBox } from "react-icons/fa6";
 import { useCart } from "../../context/CartContext";
 import { productApi } from "../../apis";
 import { Product } from "../../types";
+import { STORAGE_KEYS } from '../../constants';
+import { saveCheckoutWithChecksum } from "../../utils";
 
 const ProductDetailed: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -170,17 +173,17 @@ const ProductDetailed: React.FC = () => {
     };
 
     if (isBuyNow) {
-      const user = localStorage.getItem("userInfo");
+      const user = localStorage.getItem(STORAGE_KEYS.USER_INFO);
       if (!user) {
         toast.error("Vui lòng đăng nhập để tiếp tục mua hàng");
         navigate("/login");
         return;
       }
 
-      localStorage.setItem(
-        "checkoutItems",
-        JSON.stringify([{ ...cartItem, selected: true }]),
-      );
+      // ✅ Save with checksum to prevent tampering
+      const checkoutItem = { ...cartItem, selected: true };
+      saveCheckoutWithChecksum([checkoutItem], STORAGE_KEYS.CHECKOUT_ITEMS, 'checkoutChecksum');
+      
       navigate("/order-info");
     } else {
       addToCart(cartItem);
@@ -208,12 +211,16 @@ const ProductDetailed: React.FC = () => {
                     id="mainImage"
                     className="main-image"
                     src={mainImage}
-                    alt={product.name}
+                    alt={`Ảnh chính sản phẩm ${product.name}`}
+                    loading="eager"
+                    decoding="async"
                   />
                   <div className="b__container--right">
                     <img
                       src="https://cdn.pnj.io/images/image-update/tag-product/new-icon-3-w29.svg"
                       alt="New"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 </div>
@@ -227,6 +234,8 @@ const ProductDetailed: React.FC = () => {
                     <img
                       src="https://www.pnj.com.vn/site/assets/images/previous.svg"
                       alt="prev"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </button>
 
@@ -243,7 +252,9 @@ const ProductDetailed: React.FC = () => {
                         key={idx}
                         className={`thumbnail ${mainImage === img.imageUrl ? "active" : ""}`}
                         src={img.imageUrl}
-                        alt="thumb"
+                        alt={`Ảnh thu nhỏ ${idx + 1}`}
+                        loading="lazy"
+                        decoding="async"
                         onClick={() => {
                           setMainImage(img.imageUrl);
                           setCurrentSlide(idx + 1);
@@ -260,6 +271,8 @@ const ProductDetailed: React.FC = () => {
                     <img
                       src="https://www.pnj.com.vn/site/assets/images/previous.svg"
                       alt="next"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </button>
                 </div>
@@ -283,8 +296,10 @@ const ProductDetailed: React.FC = () => {
                       <div key={idx} className="mobile-slide min-w-full">
                         <img
                           src={img.imageUrl}
-                          alt="mobile slide"
+                          alt={`Ảnh sản phẩm ${idx + 1}`}
                           className="w-full h-auto object-contain"
+                          loading={idx === 0 ? "eager" : "lazy"}
+                          decoding="async"
                         />
                       </div>
                     ))}
@@ -301,6 +316,8 @@ const ProductDetailed: React.FC = () => {
                     <img
                       src="https://cdn.pnj.io/images/image-update/tag-product/new-icon-3-w29.svg"
                       alt="New"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 </div>
@@ -319,6 +336,8 @@ const ProductDetailed: React.FC = () => {
                   <img
                     src="https://cdn.pnj.io/images/image-update/2022/10/pnjfast/PNJfast-Giaotrong3h.svg"
                     alt="PNJ Fast"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="b__container--name">
@@ -424,6 +443,8 @@ const ProductDetailed: React.FC = () => {
                       src="https://www.pnj.com.vn/site/assets/images/shipping-icon.svg"
                       width="25"
                       alt="shipping"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                   <div className="delivery__name">
@@ -435,6 +456,8 @@ const ProductDetailed: React.FC = () => {
                     <img
                       src="https://www.pnj.com.vn/site/assets/images/shopping 247-icon.svg"
                       alt="247"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                   <div className="delivery__name">Phục vụ 24/7</div>
@@ -483,7 +506,9 @@ const ProductDetailed: React.FC = () => {
           {product.description && (
             <div className="product-description mt-10 p-4 border-t">
               <h3 className="text-xl font-bold mb-4">Mô tả sản phẩm:</h3>
-              <div dangerouslySetInnerHTML={{ __html: product.description }} />
+              <div dangerouslySetInnerHTML={{ 
+                __html: DOMPurify.sanitize(product.description) 
+              }} />
             </div>
           )}
         </div>

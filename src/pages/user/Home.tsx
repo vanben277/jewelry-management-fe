@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import BannerCarousel from "../../components/user/Home/BannerCarousel";
 import CategoryIcons from "../../components/user/Home/CategoryIcons";
 import BrandSliders from "../../components/user/Home/BrandSliders";
@@ -34,6 +35,7 @@ const Home: React.FC = () => {
         if (topRes.data) setTopSellingProducts(topRes.data);
       } catch (error) {
         console.error("Lỗi tải dữ liệu:", error);
+        toast.error("Không thể tải sản phẩm. Vui lòng thử lại sau.");
       }
     };
     fetchData();
@@ -86,9 +88,17 @@ const Home: React.FC = () => {
                       <img
                         src={primary}
                         className="container__imgnew--w"
-                        alt="p"
+                        alt={`Ảnh sản phẩm ${p.name}`}
+                        loading="lazy"
+                        decoding="async"
                       />
-                      <img src={hover} className="container__img--h" alt="p" />
+                      <img
+                        src={hover}
+                        className="container__img--h"
+                        alt={`Ảnh hover sản phẩm ${p.name}`}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     </div>
                     <div className="container__namenew">
                       <p>{p.name}</p>

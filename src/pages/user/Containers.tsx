@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Product } from "../../types";
 import { useProductFilter } from "../../hooks/useProductFilter";
 import { SkeletonProductGrid } from "../../components/Skeleton";
+import { PRODUCT_STATUS } from '../../constants';
 
 interface PaginationProps {
   currentPage: number;
@@ -90,7 +91,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <img
           src={p.primaryImageUrl || "/img/default-product.jpg"}
           className="container__imgnew--w"
-          alt={p.name}
+          alt={`Ảnh sản phẩm ${p.name}`}
+          loading="lazy"
+          decoding="async"
         />
         <img
           src={
@@ -98,13 +101,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
             p.primaryImageUrl
           }
           className="container__img--h"
-          alt={p.name}
+          alt={`Ảnh hover sản phẩm ${p.name}`}
+          loading="lazy"
+          decoding="async"
         />
-        {p.status === "IN_STOCK" && (
+        {p.status === PRODUCT_STATUS.IN_STOCK && (
           <span className="container__rightnew">
             <img
               src="https://cdn.pnj.io/images/image-update/tag-product/new-icon-3-w29.svg"
               alt="New"
+              loading="lazy"
+              decoding="async"
             />
           </span>
         )}
@@ -112,6 +119,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <img
             src="https://cdn.pnj.io/images/image-update/2022/10/pnjfast/PNJfast-Giaotrong3h.svg"
             alt="Fast"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>
@@ -168,8 +177,10 @@ const Containers: React.FC = () => {
           <img
             src={categoryInfo.bannerUrl}
             width="100%"
-            alt="Banner"
+            alt={`Banner ${categoryInfo.name}`}
             className="bannerUrl"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>

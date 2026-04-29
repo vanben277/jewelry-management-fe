@@ -4,6 +4,8 @@ import { FaChevronLeft } from "react-icons/fa6";
 import { GoHome } from "react-icons/go";
 import { orderApi } from "../../apis";
 import { Order } from "../../types";
+import { STORAGE_KEYS } from '../../constants';
+import { ACCOUNT_STATUS } from '../../constants';
 
 const statusMapping: Record<string, string> = {
   pending: "Chờ xác nhận",
@@ -19,7 +21,7 @@ const Orders: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentStatus, setCurrentStatus] = useState("all");
 
-  const accountId = localStorage.getItem("userId");
+  const accountId = localStorage.getItem(STORAGE_KEYS.USER_ID);
 
   const fetchOrders = async (status: string) => {
     setLoading(true);
@@ -32,7 +34,7 @@ const Orders: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Lỗi tải đơn hàng:", error);
-      if (error.response?.data?.status && error.response.data.status !== "ACTIVE") {
+      if (error.response?.data?.status && error.response.data.status !== ACCOUNT_STATUS.ACTIVE) {
         handleAccountIssue(error.response.data.status);
       }
     } finally {

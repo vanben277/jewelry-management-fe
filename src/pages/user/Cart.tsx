@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
 import { AiFillDelete } from "react-icons/ai";
 import { productApi } from "../../apis";
+import { STORAGE_KEYS } from '../../constants';
+import { saveCheckoutWithChecksum } from "../../utils";
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
@@ -129,7 +131,7 @@ const Cart: React.FC = () => {
   };
 
   const handleContinue = () => {
-    const user = localStorage.getItem("userInfo");
+    const user = localStorage.getItem(STORAGE_KEYS.USER_INFO);
     if (!user) {
       toast.error("Vui lòng đăng nhập để tiếp tục.");
       navigate("/login");
@@ -140,7 +142,10 @@ const Cart: React.FC = () => {
       toast.error("Vui lòng chọn ít nhất một sản phẩm để tiếp tục.");
       return;
     }
-    localStorage.setItem("checkoutItems", JSON.stringify(selectedItems));
+    
+    // ✅ Save with checksum to prevent tampering
+    saveCheckoutWithChecksum(selectedItems, STORAGE_KEYS.CHECKOUT_ITEMS, 'checkoutChecksum');
+    
     navigate("/order-info");
   };
 

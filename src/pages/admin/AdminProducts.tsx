@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
+import { FocusTrap } from "focus-trap-react";
 import {
   FaFilter,
   FaBox,
@@ -14,6 +14,8 @@ import { FaInfoCircle, FaCloudUploadAlt, FaSave } from "react-icons/fa";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { productApi, categoryApi } from "../../apis";
 import { Product } from "../../types";
+import { PAGINATION } from '../../constants';
+import { PRODUCT_STATUS } from '../../constants';
 
 interface ProductImage {
   imageUrl: string;
@@ -27,7 +29,6 @@ interface ProductSize {
 }
 
 const AdminProducts: React.FC = () => {
-  const navigate = useNavigate();
 
   // --- States Quản lý Dữ liệu ---
   const [products, setProducts] = useState<Product[]>([]);
@@ -48,7 +49,7 @@ const AdminProducts: React.FC = () => {
     status: "",
     goldType: "",
     isDeleted: "",
-    pageSize: 10,
+    pageSize: PAGINATION.ADMIN_PAGE_SIZE,
     pageNumber: 0,
   });
 
@@ -75,7 +76,6 @@ const AdminProducts: React.FC = () => {
   });
   const [formSizes, setFormSizes] = useState<ProductSize[]>([]);
   const [formImages, setFormImages] = useState<ProductImage[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedPreviewImage, setSelectedPreviewImage] = useState<
     string | null
   >(null);
@@ -386,7 +386,7 @@ const AdminProducts: React.FC = () => {
                   <option value="">Tất cả</option>
                   {statuses.map((s) => (
                     <option key={s} value={s}>
-                      {s === "IN_STOCK" ? "Còn hàng" : "Hết hàng"}
+                      {s === PRODUCT_STATUS.IN_STOCK ? "Còn hàng" : "Hết hàng"}
                     </option>
                   ))}
                 </select>
@@ -550,8 +550,8 @@ const AdminProducts: React.FC = () => {
                                 )
                               }
                             >
-                              <option value="IN_STOCK">Còn hàng</option>
-                              <option value="SOLD_OUT">Hết hàng</option>
+                              <option value={PRODUCT_STATUS.IN_STOCK}>Còn hàng</option>
+                              <option value={PRODUCT_STATUS.SOLD_OUT}>Hết hàng</option>
                             </select>
                           </td>
                           <td className="text-center">
@@ -634,20 +634,21 @@ const AdminProducts: React.FC = () => {
 
       {/* --- MODAL CREATE/EDIT --- */}
       {isModalOpen && (
-        <div className="modal-custom-overlay flex items-center justify-center">
-          <div className="modal-custom-content animate__animated animate__zoomIn !max-w-[800px]">
-            <div className="modal-header d-flex justify-content-between p-4 border-bottom !bg-white">
-              <h5 className="!text-[1.8rem] font-bold flex items-center">
-                <FaBox className="me-2" />
-                {isEditMode ? "Sửa sản phẩm" : "Tạo sản phẩm"}
-              </h5>
-              <button
-                className="border-0 text-[#737373]"
-                onClick={() => setIsModalOpen(false)}
-              >
-                <FaXmark size={24} />
-              </button>
-            </div>
+        <FocusTrap active={isModalOpen}>
+          <div className="modal-custom-overlay flex items-center justify-center">
+            <div className="modal-custom-content animate__animated animate__zoomIn !max-w-[800px]">
+              <div className="modal-header d-flex justify-content-between p-4 border-bottom !bg-white">
+                <h5 className="!text-[1.8rem] font-bold flex items-center">
+                  <FaBox className="me-2" />
+                  {isEditMode ? "Sửa sản phẩm" : "Tạo sản phẩm"}
+                </h5>
+                <button
+                  className="border-0 text-[#737373]"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  <FaXmark size={24} />
+                </button>
+              </div>
 
             <form
               onSubmit={handleFormSubmit}
@@ -936,11 +937,13 @@ const AdminProducts: React.FC = () => {
             </form>
           </div>
         </div>
+        </FocusTrap>
       )}
 
       {/* --- MODAL VIEW DETAIL --- */}
       {isViewModalOpen && selectedProduct && (
-        <div className="modal-custom-overlay flex items-center justify-center">
+        <FocusTrap active={isViewModalOpen}>
+          <div className="modal-custom-overlay flex items-center justify-center">
           <div className="modal-custom-content animate__animated animate__zoomIn !max-w-[800px]">
             <div className="modal-header d-flex justify-content-between p-4 border-bottom !bg-white">
               <h5 className="!text-[1.8rem] font-bold">
@@ -1069,6 +1072,7 @@ const AdminProducts: React.FC = () => {
             </div>
           </div>
         </div>
+        </FocusTrap>
       )}
 
       <style>{`

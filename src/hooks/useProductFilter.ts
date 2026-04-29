@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { productApi } from "../apis/product.api";
 import { Product, PageResponse } from "../types";
+import { STORAGE_KEYS } from '../constants';
+import { PAGINATION } from '../constants';
 
 export interface CategoryInfo {
   name: string;
@@ -73,7 +75,10 @@ export function useProductFilter(): UseProductFilterReturn {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isSortPanelOpen, setIsSortPanelOpen] = useState(false);
 
-  // --- 1. Load dữ liệu ban đầu: gold types + thông tin danh mục ---
+  // --- 1. Extract URL params để tránh re-render không cần thiết ---
+  const categoryParam = searchParams.get("category");
+
+  // --- 2. Load dữ liệu ban đầu: gold types + thông tin danh mục ---
   useEffect(() => {
     productApi
       .getGoldTypes()
@@ -83,7 +88,7 @@ export function useProductFilter(): UseProductFilterReturn {
       .catch(() => console.error("Lỗi tải loại vàng"));
 
     try {
-      const savedCat = localStorage.getItem("selectedCategory");
+      const savedCat = localStorage.getItem(STORAGE_KEYS.SELECTED_CATEGORY);
       if (savedCat) {
         const parsed = JSON.parse(savedCat) as Partial<CategoryInfo>;
         setCategoryInfo({
@@ -94,19 +99,21 @@ export function useProductFilter(): UseProductFilterReturn {
     } catch {
       // localStorage hỏng → giữ giá trị mặc định
     }
-  }, [searchParams.get("category")]);
+  }, [categoryParam]); // ✅ Chỉ depend vào giá trị cụ thể
 
-  // --- 2. Load sản phẩm ---
+  // --- 3. Extract URL params để tránh re-render không cần thiết ---
+  const categoryId = categoryParam || "1";
+  const searchQuery = searchParams.get("search") || "";
+
+  // --- 4. Load sản phẩm ---
   const loadProducts = useCallback(
     async (pageNumber = 0) => {
       setLoading(true);
-      const categoryId = searchParams.get("category") || "1";
-      const searchQuery = searchParams.get("search") || "";
 
       try {
         const params: Record<string, unknown> = {
           pageNumber,
-          pageSize: 12,
+          pageSize: PAGINATION.PRODUCT_PAGE_SIZE,
           name: searchQuery || undefined,
           goldType: selectedGoldType || undefined,
           sortBy: selectedSort,
@@ -120,7 +127,7 @@ export function useProductFilter(): UseProductFilterReturn {
         }
 
         const res =
-          searchQuery && !searchParams.get("category")
+          searchQuery && !categoryId
             ? await productApi.search(searchQuery, pageNumber, 12)
             : await productApi.getByCategory(Number(categoryId), params);
 
@@ -135,10 +142,10 @@ export function useProductFilter(): UseProductFilterReturn {
         setLoading(false);
       }
     },
-    [searchParams, selectedGoldType, selectedPriceRange, selectedSort, sortDir],
+    [categoryId, searchQuery, selectedGoldType, selectedPriceRange, selectedSort, sortDir],
   );
 
-  // --- 3. Re-fetch + đồng bộ URL khi filter thay đổi ---
+  // --- 5. Re-fetch + đồng bộ URL khi filter thay đổi ---
   useEffect(() => {
     loadProducts(0);
 
@@ -151,12 +158,15 @@ export function useProductFilter(): UseProductFilterReturn {
     newParams.set("dir", sortDir);
     setSearchParams(newParams, { replace: true });
   }, [
+    loadProducts,
+    setSearchParams,
+    searchParams,
     selectedGoldType,
     selectedPriceRange,
     selectedSort,
     sortDir,
-    searchParams.get("category"),
-    searchParams.get("search"),
+    categoryId,  // ✅ Chỉ depend vào giá trị cụ thể
+    searchQuery, // ✅ Chỉ depend vào giá trị cụ thể
   ]);
 
   // --- Handlers ---

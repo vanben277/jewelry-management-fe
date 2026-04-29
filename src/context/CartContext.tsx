@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { CartItem } from "../types";
@@ -43,7 +43,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     window.dispatchEvent(new Event("storage"));
   }, [cart]);
 
-  const notifySuccess = (message: string) => {
+  // Memoize notification function để tránh re-create
+  const notifySuccess = useCallback((message: string) => {
     toast.success(
       (t) => (
         <div className="flex items-center justify-between w-full gap-3 min-w-[200px]">
@@ -58,9 +59,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       ),
       { duration: 3000, position: "top-right" },
     );
-  };
+  }, []);
 
-  const addToCart = (item: CartItem) => {
+  // Memoize addToCart function
+  const addToCart = useCallback((item: CartItem) => {
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex(
         (prevItem) =>
@@ -75,23 +77,69 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           ...newCart[existingIndex],
           quantity: newCart[existingIndex].quantity + (item.quantity || 1),
         };
-        notifySuccess(`Cập nhật số lượng thành công`);
+        toast.success(
+          (t) => (
+            <div className="flex items-center justify-between w-full gap-3 min-w-[200px]">
+              <span className="text-[1.4rem] font-medium">Cập nhật số lượng thành công</span>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="p-1 hover:bg-black/5 rounded-full"
+              >
+                <IoClose size={18} className="text-gray-500" />
+              </button>
+            </div>
+          ),
+          { duration: 3000, position: "top-right" },
+        );
         return newCart;
       }
 
-      notifySuccess("Thêm vào giỏ hàng thành công");
+      toast.success(
+        (t) => (
+          <div className="flex items-center justify-between w-full gap-3 min-w-[200px]">
+            <span className="text-[1.4rem] font-medium">Thêm vào giỏ hàng thành công</span>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="p-1 hover:bg-black/5 rounded-full"
+            >
+              <IoClose size={18} className="text-gray-500" />
+            </button>
+          </div>
+        ),
+        { duration: 3000, position: "top-right" },
+      );
       return [...prevCart, { ...item, quantity: item.quantity || 1 }];
     });
-  };
+  }, [setCart]);
 
-  const updateCart = (newCart: CartItem[]) => setCart(newCart);
+  // Memoize updateCart function
+  const updateCart = useCallback((newCart: CartItem[]) => {
+    setCart(newCart);
+  }, [setCart]);
 
-  const removeFromCart = (index: number) => {
+  // Memoize removeFromCart function
+  const removeFromCart = useCallback((index: number) => {
     setCart((prevCart) => prevCart.filter((_, i) => i !== index));
-    notifySuccess("Đã xóa sản phẩm");
-  };
+    toast.success(
+      (t) => (
+        <div className="flex items-center justify-between w-full gap-3 min-w-[200px]">
+          <span className="text-[1.4rem] font-medium">Đã xóa sản phẩm</span>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="p-1 hover:bg-black/5 rounded-full"
+          >
+            <IoClose size={18} className="text-gray-500" />
+          </button>
+        </div>
+      ),
+      { duration: 3000, position: "top-right" },
+    );
+  }, [setCart]);
 
-  const clearCart = () => setCart([]);
+  // Memoize clearCart function
+  const clearCart = useCallback(() => {
+    setCart([]);
+  }, [setCart]);
 
   const totalQuantity = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
@@ -103,18 +151,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     [cart],
   );
 
+  // Memoize context value để tránh re-render không cần thiết
+  const contextValue = useMemo(
+    () => ({
+      cart,
+      addToCart,
+      updateCart,
+      removeFromCart,
+      clearCart,
+      totalQuantity,
+      totalPrice,
+    }),
+    [cart, addToCart, updateCart, removeFromCart, clearCart, totalQuantity, totalPrice],
+  );
+
   return (
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        updateCart,
-        removeFromCart,
-        clearCart,
-        totalQuantity,
-        totalPrice,
-      }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );

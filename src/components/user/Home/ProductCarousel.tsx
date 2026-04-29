@@ -187,17 +187,23 @@ const ProductCarousel: React.FC<{ products: Product[] }> = ({ products }) => {
                   <img
                     src={p.primaryImageUrl || "/img/default.jpg"}
                     className="container__img--w"
-                    alt="p"
+                    alt={`Ảnh sản phẩm ${p.name || p.displayName}`}
+                    loading="lazy"
+                    decoding="async"
                   />
                   <img
                     src={p.images?.[1]?.imageUrl || p.primaryImageUrl}
                     className="container__img--h"
-                    alt="p"
+                    alt={`Ảnh hover sản phẩm ${p.name || p.displayName}`}
+                    loading="lazy"
+                    decoding="async"
                   />
                   <span className="container__right">
                     <img
                       src="https://cdn.pnj.io/images/image-update/tag-product/new-icon-3-w29.svg"
                       alt="New"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </span>
                 </div>

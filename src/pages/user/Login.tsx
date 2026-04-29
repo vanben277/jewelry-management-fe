@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { authApi } from "../../apis";
 import { ERROR_MESSAGES } from "../../constants/errorCodes";
 import { isApiError } from "../../types/api";
+import { STORAGE_KEYS } from '../../constants';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Login: React.FC = () => {
   });
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("userInfo");
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER_INFO);
     if (savedUser) {
       const user = JSON.parse(savedUser);
       if (user.role === "ADMIN") navigate("/admin/dashboard");
@@ -52,9 +53,9 @@ const Login: React.FC = () => {
           break;
       }
       toast.error(msg);
-      localStorage.removeItem("auth");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("userInfo");
+      localStorage.removeItem(STORAGE_KEYS.AUTH);
+      localStorage.removeItem(STORAGE_KEYS.USER_ID);
+      localStorage.removeItem(STORAGE_KEYS.USER_INFO);
       setTimeout(() => navigate("/exception?code=403"), 1500);
       return false;
     }
@@ -98,11 +99,11 @@ const Login: React.FC = () => {
         const userInfo = result.data;
         if (!checkUserStatus(userInfo.status)) return;
 
-        localStorage.setItem("userInfo", JSON.stringify(userInfo));
-        localStorage.setItem("accessToken", userInfo.accessToken);
-        localStorage.setItem("userId", userInfo.id.toString());
+        localStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(userInfo));
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, userInfo.accessToken);
+        localStorage.setItem(STORAGE_KEYS.USER_ID, userInfo.id.toString());
 
-        localStorage.removeItem("auth");
+        localStorage.removeItem(STORAGE_KEYS.AUTH);
 
         toast.success(result.message || "Đăng nhập thành công!");
 
@@ -147,9 +148,14 @@ const Login: React.FC = () => {
           </div>
 
           <div className="mt-[18px] mx-[19px]">
-            <label className="block text-[1.6rem] mb-2">Tài khoản</label>
+            <label htmlFor="userName" className="block text-[1.6rem] mb-2">
+              Tài khoản
+            </label>
             <input
+              id="userName"
               type="text"
+              aria-label="Tên tài khoản"
+              aria-required="true"
               className="w-full h-[33px] p-[24px] text-[14px] border border-gray-300 !rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0d6efd] focus:ring-offset-2 transition-all"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}

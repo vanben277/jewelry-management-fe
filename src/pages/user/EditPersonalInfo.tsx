@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { FaChevronLeft, FaCamera } from "react-icons/fa";
 import { GoHome } from "react-icons/go";
 import { accountApi } from "../../apis";
+import { STORAGE_KEYS } from '../../constants';
 
 const EditPersonalInfo: React.FC = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ const EditPersonalInfo: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const editAccountRaw = localStorage.getItem("userInfo");
+  const editAccountRaw = localStorage.getItem(STORAGE_KEYS.USER_INFO);
 
   useEffect(() => {
     if (!editAccountRaw) {
@@ -92,7 +93,7 @@ const EditPersonalInfo: React.FC = () => {
 
       // Lấy lại data mới
       const res = await accountApi.getById(user.id);
-      localStorage.setItem("userInfo", JSON.stringify(res.data));
+      localStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(res.data));
 
       toast.success("Cập nhật thành công!");
       setTimeout(() => navigate(-1), 1500);

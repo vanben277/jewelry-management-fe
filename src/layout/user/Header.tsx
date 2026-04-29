@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { IoIosSearch } from "react-icons/io";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { useCart } from "../../context/CartContext";
@@ -7,6 +8,8 @@ import { FaDeleteLeft } from "react-icons/fa6";
 import ChatBot from "../../components/user/ChatBot";
 import { categoryApi, productApi } from "../../apis";
 import { Category, Product, Account } from "../../types";
+import { safeParseJSON } from "../../utils/localStorage";
+import { STORAGE_KEYS } from '../../constants';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -28,11 +31,15 @@ const Header: React.FC = () => {
       .then((res) => {
         if (res.data) setCategories(res.data);
       })
-      .catch((err) => console.error("Lỗi tải danh mục:", err));
+      .catch((err) => {
+        console.error("Lỗi tải danh mục:", err);
+        toast.error("Không thể tải danh mục. Vui lòng thử lại sau.");
+      });
 
     const loadUser = () => {
-      const saved = localStorage.getItem("userInfo");
-      setUser(saved ? JSON.parse(saved) : null);
+      // ✅ Use safeParseJSON instead of direct JSON.parse
+      const user = safeParseJSON<Account | null>("userInfo", null);
+      setUser(user);
     };
 
     loadUser();
@@ -111,7 +118,7 @@ const Header: React.FC = () => {
       name: cat.name,
       bannerUrl: cat.bannerUrl || "",
     };
-    localStorage.setItem("selectedCategory", JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEYS.SELECTED_CATEGORY, JSON.stringify(data));
   };
 
   const getGreeting = (): string => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import {FocusTrap } from "focus-trap-react";
 import {
   FaFilter,
   FaPhone,
@@ -16,6 +17,7 @@ import { FaInfoCircle, FaCloudUploadAlt, FaSave } from "react-icons/fa";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { accountApi } from "../../apis";
 import { Account } from "../../types";
+import { PAGINATION } from '../../constants';
 
 const AdminAccounts: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ const AdminAccounts: React.FC = () => {
     role: "",
     gender: "",
     status: "",
-    pageSize: 10,
+    pageSize: PAGINATION.ADMIN_PAGE_SIZE,
     pageNumber: 0,
   });
 
@@ -68,6 +70,7 @@ const AdminAccounts: React.FC = () => {
       const data = await accountApi.filter({
         phone: filters.phone || undefined,
         role: filters.role || undefined,
+        gender: filters.gender || undefined, // ✅ Thêm gender filter
         status: filters.status || undefined,
         pageSize: filters.pageSize,
         pageNumber: filters.pageNumber,
@@ -528,19 +531,20 @@ const AdminAccounts: React.FC = () => {
 
       {/* --- MODAL FORM --- */}
       {isModalOpen && (
-        <div className="modal-custom-overlay flex items-center justify-center">
-          <div className="modal-custom-content animate__animated animate__zoomIn">
-            <div className="modal-header d-flex justify-content-between p-4 border-bottom !bg-white">
-              <h5 className="!text-[1.6rem] font-semibold">
-                {isEditMode ? "Sửa tài khoản" : "Tạo tài khoản mới"}
-              </h5>
-              <button
-                className="border-0 text-[#333]"
-                onClick={() => setIsModalOpen(false)}
-              >
-                <FaXmark size={24} />
-              </button>
-            </div>
+        <FocusTrap active={isModalOpen}>
+          <div className="modal-custom-overlay flex items-center justify-center">
+            <div className="modal-custom-content animate__animated animate__zoomIn">
+              <div className="modal-header d-flex justify-content-between p-4 border-bottom !bg-white">
+                <h5 className="!text-[1.6rem] font-semibold">
+                  {isEditMode ? "Sửa tài khoản" : "Tạo tài khoản mới"}
+                </h5>
+                <button
+                  className="border-0 text-[#333]"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  <FaXmark size={24} />
+                </button>
+              </div>
 
             <form
               onSubmit={handleFormSubmit}
@@ -768,6 +772,7 @@ const AdminAccounts: React.FC = () => {
             </form>
           </div>
         </div>
+        </FocusTrap>
       )}
 
       <style>{`

@@ -13,6 +13,7 @@ import { FaInfoCircle, FaCloudUploadAlt, FaSave } from "react-icons/fa";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { categoryApi } from "../../apis";
 import { Category } from "../../types";
+import { PAGINATION } from '../../constants';
 
 // --- Interfaces ---
 interface PageData {
@@ -36,7 +37,7 @@ const AdminCategories: React.FC = () => {
   // Filters
   const [filters, setFilters] = useState({
     name: "",
-    pageSize: 10,
+    pageSize: PAGINATION.ADMIN_PAGE_SIZE,
     pageNumber: 0,
   });
 
