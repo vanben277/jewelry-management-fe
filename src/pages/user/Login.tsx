@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import ReCAPTCHA from "react-google-recaptcha";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { authApi } from "../../apis";
 import { ERROR_MESSAGES } from "../../constants/errorCodes";
 import { isApiError } from "../../types/api";
@@ -124,8 +124,6 @@ const Login: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen flex justify-center bg-[#f8fafc]">
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-
       <div className="bg-white relative max-w-[500px] w-full max-sm:w-full">
         <div className="flex w-full justify-center py-[10px]">
           <Link to="/">

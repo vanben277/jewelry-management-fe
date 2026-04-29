@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaUser, FaCheck, FaTimes } from "react-icons/fa";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { authApi } from "../../apis";
 
 const Register: React.FC = () => {
@@ -126,8 +126,6 @@ const Register: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen flex justify-center bg-[#f8fafc]">
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-
       <div className="bg-white relative max-w-[500px] w-full max-sm:w-full border-x border-gray-100 shadow-sm">
         <div className="flex w-full justify-center py-[10px]">
           <Link to="/">

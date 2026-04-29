@@ -35,7 +35,9 @@ const getSessionId = () => {
 };
 
 const hasProducts = (content: string): boolean => {
-  return /\d+\.\s+.*?:\s*\n/.test(content) && /Giá:/i.test(content);
+  const hasOldFormat = /\d+\.\s+.*?:\s*\n/.test(content) && /Giá:/i.test(content);
+  const hasNewFormat = /ID:\s*\d+/i.test(content) && /Tên:/i.test(content) && /Giá:/i.test(content);
+  return hasOldFormat || hasNewFormat;
 };
 
 const parseProducts = (content: string): ParsedMessage => {
@@ -49,13 +51,22 @@ const parseProducts = (content: string): ParsedMessage => {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    const productMatch = line.match(/^\d+\.\s+(.+):?\s*$/);
-    if (productMatch && phase !== "outro") {
+    const newFormatMatch = line.match(/^(?:Mã\s*)?ID:\s*(.+)$/i);
+    const oldFormatMatch = line.match(/^\d+\.\s+(.+):?\s*$/);
+
+    if (newFormatMatch && phase !== "outro") {
       phase = "products";
       if (currentProduct && currentProduct.name) {
         products.push(currentProduct as Product);
       }
-      currentProduct = { name: productMatch[1].replace(/:$/, "").trim() };
+      currentProduct = { id: newFormatMatch[1].trim() };
+      continue;
+    } else if (oldFormatMatch && phase !== "outro") {
+      phase = "products";
+      if (currentProduct && currentProduct.name) {
+        products.push(currentProduct as Product);
+      }
+      currentProduct = { name: oldFormatMatch[1].replace(/:$/, "").trim() };
       continue;
     }
 
@@ -65,26 +76,27 @@ const parseProducts = (content: string): ParsedMessage => {
     }
 
     if (phase === "products" && currentProduct) {
-      if (line.startsWith("*")) {
-        const detail = line.replace(/^\*\s*/, "");
-        if (/^Giá:/i.test(detail)) {
-          currentProduct.price = detail.replace(/^Giá:\s*/i, "").trim();
-        } else if (/^Tình trạng:/i.test(detail)) {
-          currentProduct.status = detail.replace(/^Tình trạng:\s*/i, "").trim();
-        } else if (/^Mã SKU:/i.test(detail)) {
-          currentProduct.sku = detail.replace(/^Mã SKU:\s*/i, "").trim();
-        } else if (/^ID:/i.test(detail) || /^Mã ID:/i.test(detail)) {
-          currentProduct.id = detail.replace(/^(Mã\s*)?ID:\s*/i, "").trim();
-        } else if (/^Hình ảnh:/i.test(detail)) {
-          currentProduct.image = detail.replace(/^Hình ảnh:\s*/i, "").trim();
-        }
-      } else if (line && !line.startsWith("*")) {
+      const cleanLine = line.replace(/^\*\s*/, "").trim();
+
+      if (/^Tên(?: sản phẩm)?:/i.test(cleanLine) && !currentProduct.name) {
+        currentProduct.name = cleanLine.replace(/^Tên(?: sản phẩm)?:\s*/i, "").trim();
+      } else if (/^Giá:/i.test(cleanLine)) {
+        currentProduct.price = cleanLine.replace(/^Giá:\s*/i, "").trim();
+      } else if (/^Tình trạng:/i.test(cleanLine)) {
+        currentProduct.status = cleanLine.replace(/^Tình trạng:\s*/i, "").trim();
+      } else if (/^Mã SKU:/i.test(cleanLine)) {
+        currentProduct.sku = cleanLine.replace(/^Mã SKU:\s*/i, "").trim();
+      } else if (/^Hình ảnh:/i.test(cleanLine)) {
+        currentProduct.image = cleanLine.replace(/^Hình ảnh:\s*/i, "").trim();
+      } else if (/^(?:Mã\s*)?ID:/i.test(cleanLine) && !currentProduct.id) {
+        currentProduct.id = cleanLine.replace(/^(?:Mã\s*)?ID:\s*/i, "").trim();
+      } else if (cleanLine !== "" && !cleanLine.includes(":")) {
         if (currentProduct && currentProduct.name) {
           products.push(currentProduct as Product);
           currentProduct = null;
         }
         phase = "outro";
-        outro += (outro ? "\n" : "") + line;
+        outro += (outro ? "\n" : "") + cleanLine;
       }
     } else if (phase === "outro") {
       outro += (outro ? "\n" : "") + line;
@@ -169,6 +181,108 @@ const BotProductMessage: React.FC<{ content: string }> = ({ content }) => {
         <div className="jm-product-grid">
           {products.map((p, i) => (
             <ProductCard key={i} product={p} index={i} />
+          ))}
+        </div>
+      )}
+      {outro && <p className="jm-bot-product-outro">{renderText(outro)}</p>}
+    </div>
+  );
+};
+
+interface Order {
+  id: string;
+  status: string;
+  total: string;
+  date: string;
+}
+
+interface ParsedOrderMessage {
+  intro: string;
+  orders: Order[];
+  outro: string;
+}
+
+const hasOrders = (content: string): boolean => {
+  return /-\s*Đơn\s*#\d+\s*\|/i.test(content);
+};
+
+const parseOrders = (content: string): ParsedOrderMessage => {
+  const lines = content.split("\n");
+  const orders: Order[] = [];
+  let intro = "";
+  let outro = "";
+  let phase: "intro" | "orders" | "outro" = "intro";
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    const orderMatch = line.match(/^-\s*Đơn\s*#(\d+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*(.+)$/i);
+
+    if (orderMatch && phase !== "outro") {
+      phase = "orders";
+      orders.push({
+        id: orderMatch[1].trim(),
+        status: orderMatch[2].trim(),
+        total: orderMatch[3].trim(),
+        date: orderMatch[4].trim(),
+      });
+      continue;
+    }
+
+    if (phase === "intro") {
+      if (line !== "") intro += (intro ? "\n" : "") + line;
+    } else if (phase === "orders") {
+      if (line !== "" && !/^-\s*Đơn/.test(line)) {
+        phase = "outro";
+        outro += line;
+      }
+    } else if (phase === "outro") {
+      if (line !== "") outro += (outro ? "\n" : "") + line;
+    }
+  }
+
+  return { intro: intro.trim(), orders, outro: outro.trim() };
+};
+
+const OrderCard: React.FC<{ order: Order; index: number }> = ({ order, index }) => {
+  const dateObj = new Date(order.date);
+  const formattedDate = isNaN(dateObj.getTime())
+    ? order.date
+    : dateObj.toLocaleDateString("vi-VN") + " " + dateObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+
+  const formattedTotal = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(order.total) || 0);
+
+  let statusClass = "badge-out";
+  const st = order.status.toUpperCase();
+  if (st === "PENDING" || st === "CONFIRMED" || st === "DELIVERED") {
+    statusClass = "badge-in-stock";
+  }
+
+  return (
+    <div className="jm-product-card jm-order-card" style={{ animationDelay: `${index * 80}ms` }}>
+      <div className="jm-product-info" style={{ padding: "12px", width: "100%" }}>
+        <p className="jm-product-name" style={{ marginBottom: "8px" }}>Đơn hàng #{order.id}</p>
+        <p className="jm-product-price" style={{ fontSize: "14px", color: "var(--gold)" }}>Tổng tiền: {formattedTotal}</p>
+        <p className="jm-product-sku" style={{ marginTop: "4px" }}>Ngày đặt: {formattedDate}</p>
+        <div style={{ marginTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span className={`jm-product-badge ${statusClass}`} style={{ position: "relative", bottom: "auto", left: "auto" }}>
+            {order.status}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BotOrderMessage: React.FC<{ content: string }> = ({ content }) => {
+  const { intro, orders, outro } = parseOrders(content);
+  return (
+    <div className="jm-bot-product-wrap">
+      {intro && <p className="jm-bot-product-intro">{renderText(intro)}</p>}
+      {orders.length > 0 && (
+        <div className="jm-product-grid">
+          {orders.map((o, i) => (
+            <OrderCard key={i} order={o} index={i} />
           ))}
         </div>
       )}
@@ -404,6 +518,10 @@ const ChatBot: React.FC = () => {
                       hasProducts(msg.content) ? (
                         <div className="jm-bubble jm-bubble--product">
                           <BotProductMessage content={msg.content} />
+                        </div>
+                      ) : hasOrders(msg.content) ? (
+                        <div className="jm-bubble jm-bubble--product">
+                          <BotOrderMessage content={msg.content} />
                         </div>
                       ) : (
                         <div className="jm-bubble jm-bubble--bot">

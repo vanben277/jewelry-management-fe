@@ -19,7 +19,9 @@ const Sidebar: React.FC = () => {
     if (window.confirm("Bạn có chắc chắn muốn đăng xuất?")) {
       localStorage.clear();
       toast.success("Đã đăng xuất thành công");
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login");
+      }, 200);
     }
   };
 
