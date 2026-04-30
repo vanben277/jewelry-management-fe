@@ -25,7 +25,14 @@ const AdminOrders: React.FC = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [statuses, setStatuses] = useState<string[]>([]);
 
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  status: string;
+  pageSize: number;
+  pageNumber: number;
+  }>({
     customerName: "",
     customerPhone: "",
     customerAddress: "",

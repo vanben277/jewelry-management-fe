@@ -3,17 +3,17 @@ import { Link } from "react-router-dom";
 
 const brands = [
   {
-    img: "https://cdn.pnj.io/images/promo/202/BANNER-WEB_Style_LuckyMe_1200x1200-nocta.jpg",
+    img: "https://cdn.pnj.io/images/promo/284/style-t1-26-Artboard3.jpg",
     logo: "https://cdn.pnj.io/images/image-update/2021/tab-sale-v2/style-logo_1.svg",
     alt: "Style Lucky Me",
   },
   {
-    img: "https://cdn.pnj.io/images/promo/222/1000x1000_disney.jpg",
+    img: "https://cdn.pnj.io/images/promo/283/banner_web-1x1_disney.jpg",
     logo: "https://cdn.pnj.io/images/image-update/2021/tab-sale-v2/pnj disney-01.png",
     alt: "Disney",
   },
   {
-    img: "https://cdn.pnj.io/images/promo/225/watch-t10-24-1000x1000.jpg",
+    img: "https://cdn.pnj.io/images/promo/283/Princess-Eng-ver.jpg",
     logo: "https://cdn.pnj.io/images/image-update/2021/tab-sale-v2/pnj-watch_1.svg",
     alt: "PNJ Watch",
   },

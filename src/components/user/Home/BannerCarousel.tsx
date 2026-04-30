@@ -10,6 +10,7 @@ const BannerCarousel: React.FC = () => {
     >
       <div className="carousel-inner">
         {[
+          "https://cdn.pnj.io/images/promo/292/tabsale-t4-26-1972x640CTA.jpg",
           "https://cdn.pnj.io/images/promo/271/tabsale-t10-25-1972x640CTA.jpg",
           "https://cdn.pnj.io/images/promo/270/pnvn-2010-25-1972X640-CTA.png",
           "https://cdn.pnj.io/images/promo/240/egift-t3-25-1972x640CTA.jpg",

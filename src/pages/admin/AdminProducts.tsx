@@ -258,13 +258,28 @@ const AdminProducts: React.FC = () => {
       });
     }
 
-    formImages.forEach((img, i) => {
+    if (formImages.length > 0 && !formImages.some(img => img.isPrimary)) {
+  formImages[0].isPrimary = true;
+}
+
+  if (isEditMode) {
+    const imagesToKeep = formImages.filter(img => !img.file);
+    imagesToKeep.forEach((img, i) => {
+      data.append(`images[${i}].imageUrl`, img.imageUrl);
+      data.append(`images[${i}].isPrimary`, img.isPrimary.toString());
+    });
+    
+    const newImages = formImages.filter(img => img.file);
+    newImages.forEach(img => {
+      data.append('imageFiles', img.file!);
+    });
+  } else {
+    formImages.forEach(img => {
       if (img.file) {
-        const key = isEditMode ? "imageFiles" : "images";
-        data.append(key, img.file);
-        data.append(`${key}[${i}].isPrimary`, img.isPrimary.toString());
+        data.append('images', img.file);
       }
     });
+  }
 
     try {
       if (isEditMode && selectedProduct) {
@@ -277,7 +292,7 @@ const AdminProducts: React.FC = () => {
       setIsModalOpen(false);
       loadProducts();
     } catch (error: any) {
-      toast.error(error.response?.data?.errorMessage || "Thất bại");
+      toast.error(error.response?.data?.message || error.response?.data?.errorMessage || "Thất bại");
     }
   };
 

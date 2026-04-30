@@ -6,6 +6,9 @@ import { CiCirclePlus, CiUser } from "react-icons/ci";
 import { TiDelete } from "react-icons/ti";
 import { aiApi } from "../../apis/ai.api";
 import { Message, ChatHistory } from "../../types";
+import { AiResponse, parseAiResponse } from "../../types/ai.types";
+import { AiMessageRenderer } from "./AiMessageRenderer";
+import "../../assets/css/ai-message-renderer.css";
 
 interface Product {
   id: string;
@@ -500,45 +503,102 @@ const ChatBot: React.FC = () => {
                 Đang tải lịch sử...
               </div>
             ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`jm-msg-row ${
-                    msg.type === "user" ? "jm-msg-row--user" : "jm-msg-row--bot"
-                  }`}
-                >
-                  {msg.type === "bot" && (
-                    <div className="jm-msg-avatar jm-msg-avatar--bot">
-                      <CiUser />
-                    </div>
-                  )}
+              messages.map((msg) => {
+                // Parse AI response nếu là bot message
+                let aiResponse: AiResponse | null = null;
+                if (msg.type === "bot") {
+                  aiResponse = parseAiResponse(msg.content);
+                }
 
-                  <div className="jm-msg-body">
-                    {msg.type === "bot" ? (
-                      hasProducts(msg.content) ? (
-                        <div className="jm-bubble jm-bubble--product">
-                          <BotProductMessage content={msg.content} />
+                return (
+                  <div
+                    key={msg.id}
+                    className={`jm-msg-row ${
+                      msg.type === "user" ? "jm-msg-row--user" : "jm-msg-row--bot"
+                    }`}
+                  >
+                    {msg.type === "bot" && (
+                      <div className="jm-msg-avatar jm-msg-avatar--bot">
+                        <CiUser />
+                      </div>
+                    )}
+
+                    <div className="jm-msg-body">
+                      {msg.type === "bot" && aiResponse ? (
+                        <div className={`jm-bubble ${
+                          aiResponse.type === 'products' || aiResponse.type === 'orders' 
+                            ? 'jm-bubble--product' 
+                            : 'jm-bubble--bot'
+                        }`}>
+                          <AiMessageRenderer
+                            response={aiResponse}
+                            onConfirm={async (action, targetId) => {
+                              // Handle confirmation - send confirmation message
+                              const confirmMessage: Message = {
+                                id: Date.now().toString(),
+                                type: "user",
+                                content: `Xác nhận ${action} #${targetId}`,
+                                timestamp: new Date(),
+                              };
+                              setMessages((prev) => [...prev, confirmMessage]);
+                              setIsLoading(true);
+
+                              try {
+                                const res = await aiApi.chat(`Xác nhận ${action} #${targetId}`, sessionId);
+                                const aiResponse = res.data;
+
+                                const botMessage: Message = {
+                                  id: (Date.now() + 1).toString(),
+                                  type: "bot",
+                                  content:
+                                    typeof aiResponse === "string"
+                                      ? aiResponse
+                                      : (aiResponse as any).aiResponse || "",
+                                  timestamp: new Date(),
+                                };
+                                setMessages((prev) => [...prev, botMessage]);
+                              } catch {
+                                setMessages((prev) => [
+                                  ...prev,
+                                  {
+                                    id: (Date.now() + 1).toString(),
+                                    type: "bot",
+                                    content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau!",
+                                    timestamp: new Date(),
+                                  },
+                                ]);
+                              } finally {
+                                setIsLoading(false);
+                              }
+                            }}
+                            onCancel={() => {
+                              // Handle cancel - send cancel message
+                              const cancelMessage: Message = {
+                                id: Date.now().toString(),
+                                type: "user",
+                                content: "Không, hủy bỏ",
+                                timestamp: new Date(),
+                              };
+                              setMessages((prev) => [...prev, cancelMessage]);
+                            }}
+                          />
                         </div>
-                      ) : hasOrders(msg.content) ? (
-                        <div className="jm-bubble jm-bubble--product">
-                          <BotOrderMessage content={msg.content} />
+                      ) : msg.type === "user" ? (
+                        <div className="jm-bubble jm-bubble--user">
+                          {msg.content}
                         </div>
                       ) : (
                         <div className="jm-bubble jm-bubble--bot">
-                          <BotTextMessage content={msg.content} />
+                          <div className="jm-bot-text">{msg.content}</div>
                         </div>
-                      )
-                    ) : (
-                      <div className="jm-bubble jm-bubble--user">
-                        {msg.content}
-                      </div>
-                    )}
-                    <span className="jm-msg-time">
-                      {formatTime(msg.timestamp)}
-                    </span>
+                      )}
+                      <span className="jm-msg-time">
+                        {formatTime(msg.timestamp)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
 
             {/* Typing indicator */}
