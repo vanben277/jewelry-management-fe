@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { LuMessageSquareMore, LuSendHorizontal } from "react-icons/lu";
 import { RxAvatar } from "react-icons/rx";
 import { CiCirclePlus, CiUser } from "react-icons/ci";
@@ -9,21 +8,6 @@ import { Message, ChatHistory } from "../../types";
 import { AiResponse, parseAiResponse } from "../../types/ai.types";
 import { AiMessageRenderer } from "./AiMessageRenderer";
 import "../../assets/css/ai-message-renderer.css";
-
-interface Product {
-  id: string;
-  name: string;
-  price: string;
-  sku: string;
-  status: string;
-  image: string;
-}
-
-interface ParsedMessage {
-  intro: string;
-  products: Product[];
-  outro: string;
-}
 
 const generateSessionId = () =>
   Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -37,266 +21,34 @@ const getSessionId = () => {
   return sessionId;
 };
 
-const hasProducts = (content: string): boolean => {
-  const hasOldFormat = /\d+\.\s+.*?:\s*\n/.test(content) && /Giá:/i.test(content);
-  const hasNewFormat = /ID:\s*\d+/i.test(content) && /Tên:/i.test(content) && /Giá:/i.test(content);
-  return hasOldFormat || hasNewFormat;
-};
-
-const parseProducts = (content: string): ParsedMessage => {
-  const lines = content.split("\n");
-  const products: Product[] = [];
-  let intro = "";
-  let outro = "";
-  let currentProduct: Partial<Product> | null = null;
-  let phase: "intro" | "products" | "outro" = "intro";
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    const newFormatMatch = line.match(/^(?:Mã\s*)?ID:\s*(.+)$/i);
-    const oldFormatMatch = line.match(/^\d+\.\s+(.+):?\s*$/);
-
-    if (newFormatMatch && phase !== "outro") {
-      phase = "products";
-      if (currentProduct && currentProduct.name) {
-        products.push(currentProduct as Product);
-      }
-      currentProduct = { id: newFormatMatch[1].trim() };
-      continue;
-    } else if (oldFormatMatch && phase !== "outro") {
-      phase = "products";
-      if (currentProduct && currentProduct.name) {
-        products.push(currentProduct as Product);
-      }
-      currentProduct = { name: oldFormatMatch[1].replace(/:$/, "").trim() };
-      continue;
-    }
-
-    if (phase === "intro") {
-      intro += (intro ? "\n" : "") + line;
-      continue;
-    }
-
-    if (phase === "products" && currentProduct) {
-      const cleanLine = line.replace(/^\*\s*/, "").trim();
-
-      if (/^Tên(?: sản phẩm)?:/i.test(cleanLine) && !currentProduct.name) {
-        currentProduct.name = cleanLine.replace(/^Tên(?: sản phẩm)?:\s*/i, "").trim();
-      } else if (/^Giá:/i.test(cleanLine)) {
-        currentProduct.price = cleanLine.replace(/^Giá:\s*/i, "").trim();
-      } else if (/^Tình trạng:/i.test(cleanLine)) {
-        currentProduct.status = cleanLine.replace(/^Tình trạng:\s*/i, "").trim();
-      } else if (/^Mã SKU:/i.test(cleanLine)) {
-        currentProduct.sku = cleanLine.replace(/^Mã SKU:\s*/i, "").trim();
-      } else if (/^Hình ảnh:/i.test(cleanLine)) {
-        currentProduct.image = cleanLine.replace(/^Hình ảnh:\s*/i, "").trim();
-      } else if (/^(?:Mã\s*)?ID:/i.test(cleanLine) && !currentProduct.id) {
-        currentProduct.id = cleanLine.replace(/^(?:Mã\s*)?ID:\s*/i, "").trim();
-      } else if (cleanLine !== "" && !cleanLine.includes(":")) {
-        if (currentProduct && currentProduct.name) {
-          products.push(currentProduct as Product);
-          currentProduct = null;
-        }
-        phase = "outro";
-        outro += (outro ? "\n" : "") + cleanLine;
-      }
-    } else if (phase === "outro") {
-      outro += (outro ? "\n" : "") + line;
-    }
+// Suggested questions for new conversations
+const SUGGESTED_QUESTIONS = [
+  {
+    icon: "💍",
+    text: "Tìm nhẫn cưới vàng 18K",
+    query: "Tôi muốn tìm nhẫn cưới vàng 18K"
+  },
+  {
+    icon: "💎",
+    text: "Sản phẩm mới nhất",
+    query: "Cho tôi xem các sản phẩm mới nhất"
+  },
+  {
+    icon: "📦",
+    text: "Kiểm tra đơn hàng",
+    query: "Tôi muốn kiểm tra đơn hàng của mình"
+  },
+  {
+    icon: "⭐",
+    text: "Sản phẩm bán chạy",
+    query: "Cho tôi xem các sản phẩm bán chạy nhất"
+  },
+  {
+    icon: "🔍",
+    text: "Tư vấn chọn size nhẫn",
+    query: "Làm sao để chọn size nhẫn phù hợp?"
   }
-
-  if (currentProduct && currentProduct.name) {
-    products.push(currentProduct as Product);
-  }
-
-  return { intro: intro.trim(), products, outro: outro.trim() };
-};
-
-const renderText = (content: string) => {
-  if (!content) return null;
-  const parts = content.split(/(\*\*.*?\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
-    }
-    return <span key={i}>{part}</span>;
-  });
-};
-
-const ProductCard: React.FC<{ product: Product; index: number }> = ({
-  product,
-  index,
-}) => (
-  <div
-    className="jm-product-card"
-    style={{ animationDelay: `${index * 80}ms` }}
-  >
-    <div className="jm-product-img-wrap">
-      {product.image ? (
-        <img
-          src={product.image}
-          alt={product.name}
-          className="jm-product-img"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
-          }}
-        />
-      ) : (
-        <div className="jm-product-img-placeholder">💎</div>
-      )}
-      {product.status && (
-        <span
-          className={`jm-product-badge ${
-            product.status.toLowerCase().includes("hàng")
-              ? "badge-in-stock"
-              : "badge-out"
-          }`}
-        >
-          {product.status}
-        </span>
-      )}
-    </div>
-    <div className="jm-product-info">
-      <p className="jm-product-name">{product.name}</p>
-      {product.price && <p className="jm-product-price">{product.price}</p>}
-      {product.sku && (
-        <p className="jm-product-sku">Mã sản phẩm: {product.sku}</p>
-      )}
-      {product.id && (
-        <Link
-          to={`/product-detailed/${product.id}`}
-          className="jm-product-detail-link"
-        >
-          Xem chi tiết →
-        </Link>
-      )}
-    </div>
-  </div>
-);
-
-const BotProductMessage: React.FC<{ content: string }> = ({ content }) => {
-  const { intro, products, outro } = parseProducts(content);
-  return (
-    <div className="jm-bot-product-wrap">
-      {intro && <p className="jm-bot-product-intro">{renderText(intro)}</p>}
-      {products.length > 0 && (
-        <div className="jm-product-grid">
-          {products.map((p, i) => (
-            <ProductCard key={i} product={p} index={i} />
-          ))}
-        </div>
-      )}
-      {outro && <p className="jm-bot-product-outro">{renderText(outro)}</p>}
-    </div>
-  );
-};
-
-interface Order {
-  id: string;
-  status: string;
-  total: string;
-  date: string;
-}
-
-interface ParsedOrderMessage {
-  intro: string;
-  orders: Order[];
-  outro: string;
-}
-
-const hasOrders = (content: string): boolean => {
-  return /-\s*Đơn\s*#\d+\s*\|/i.test(content);
-};
-
-const parseOrders = (content: string): ParsedOrderMessage => {
-  const lines = content.split("\n");
-  const orders: Order[] = [];
-  let intro = "";
-  let outro = "";
-  let phase: "intro" | "orders" | "outro" = "intro";
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-
-    const orderMatch = line.match(/^-\s*Đơn\s*#(\d+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*(.+)$/i);
-
-    if (orderMatch && phase !== "outro") {
-      phase = "orders";
-      orders.push({
-        id: orderMatch[1].trim(),
-        status: orderMatch[2].trim(),
-        total: orderMatch[3].trim(),
-        date: orderMatch[4].trim(),
-      });
-      continue;
-    }
-
-    if (phase === "intro") {
-      if (line !== "") intro += (intro ? "\n" : "") + line;
-    } else if (phase === "orders") {
-      if (line !== "" && !/^-\s*Đơn/.test(line)) {
-        phase = "outro";
-        outro += line;
-      }
-    } else if (phase === "outro") {
-      if (line !== "") outro += (outro ? "\n" : "") + line;
-    }
-  }
-
-  return { intro: intro.trim(), orders, outro: outro.trim() };
-};
-
-const OrderCard: React.FC<{ order: Order; index: number }> = ({ order, index }) => {
-  const dateObj = new Date(order.date);
-  const formattedDate = isNaN(dateObj.getTime())
-    ? order.date
-    : dateObj.toLocaleDateString("vi-VN") + " " + dateObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
-
-  const formattedTotal = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(order.total) || 0);
-
-  let statusClass = "badge-out";
-  const st = order.status.toUpperCase();
-  if (st === "PENDING" || st === "CONFIRMED" || st === "DELIVERED") {
-    statusClass = "badge-in-stock";
-  }
-
-  return (
-    <div className="jm-product-card jm-order-card" style={{ animationDelay: `${index * 80}ms` }}>
-      <div className="jm-product-info" style={{ padding: "12px", width: "100%" }}>
-        <p className="jm-product-name" style={{ marginBottom: "8px" }}>Đơn hàng #{order.id}</p>
-        <p className="jm-product-price" style={{ fontSize: "14px", color: "var(--gold)" }}>Tổng tiền: {formattedTotal}</p>
-        <p className="jm-product-sku" style={{ marginTop: "4px" }}>Ngày đặt: {formattedDate}</p>
-        <div style={{ marginTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span className={`jm-product-badge ${statusClass}`} style={{ position: "relative", bottom: "auto", left: "auto" }}>
-            {order.status}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const BotOrderMessage: React.FC<{ content: string }> = ({ content }) => {
-  const { intro, orders, outro } = parseOrders(content);
-  return (
-    <div className="jm-bot-product-wrap">
-      {intro && <p className="jm-bot-product-intro">{renderText(intro)}</p>}
-      {orders.length > 0 && (
-        <div className="jm-product-grid">
-          {orders.map((o, i) => (
-            <OrderCard key={i} order={o} index={i} />
-          ))}
-        </div>
-      )}
-      {outro && <p className="jm-bot-product-outro">{renderText(outro)}</p>}
-    </div>
-  );
-};
-
-const BotTextMessage: React.FC<{ content: string }> = ({ content }) => (
-  <div className="jm-bot-text">{renderText(content)}</div>
-);
+];
 
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -304,6 +56,7 @@ const ChatBot: React.FC = () => {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionId = getSessionId();
 
@@ -325,6 +78,7 @@ const ChatBot: React.FC = () => {
         timestamp: new Date(),
       },
     ]);
+    setShowSuggestions(true); // Show suggestions for new conversation
   };
 
   const loadHistory = useCallback(async () => {
@@ -353,6 +107,7 @@ const ChatBot: React.FC = () => {
           }
         });
         setMessages(historyMessages);
+        setShowSuggestions(false); // Hide suggestions if there's history
       } else {
         setDefaultWelcome();
       }
@@ -369,42 +124,74 @@ const ChatBot: React.FC = () => {
     }
   }, [isOpen, messages.length, loadHistory]);
 
-  const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  const handleSend = async (messageText?: string) => {
+    const textToSend = messageText || inputValue;
+    if (!textToSend.trim() || isLoading) return;
+
+    // Hide suggestions after first message
+    setShowSuggestions(false);
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content: inputValue,
+      content: textToSend,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const currentInput = inputValue;
     setInputValue("");
     setIsLoading(true);
 
     try {
-      const res = await aiApi.chat(currentInput, sessionId);
+      const res = await aiApi.chat(textToSend, sessionId);
       const aiResponse = res.data;
+
+      let botContent = "";
+      
+      // Check if response is a string (might be JSON string)
+      if (typeof aiResponse === "string") {
+        try {
+          // Try to parse as JSON to check for error type
+          const parsed = JSON.parse(aiResponse);
+          if (parsed.type === "error") {
+            // AI system error - show maintenance message
+            botContent = "🔧 Hệ thống AI đang được bảo trì.\n\n" +
+                        "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+                        "📞 Hotline: 1900 1234\n" +
+                        "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+                        "Xin lỗi vì sự bất tiện này! 🙏";
+          } else {
+            botContent = aiResponse;
+          }
+        } catch {
+          // Not JSON, use as is
+          botContent = aiResponse;
+        }
+      } else if ((aiResponse as any).aiResponse) {
+        botContent = (aiResponse as any).aiResponse;
+      } else {
+        botContent = "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau!";
+      }
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "bot",
-        content:
-          typeof aiResponse === "string"
-            ? aiResponse
-            : (aiResponse as any).aiResponse || "",
+        content: botContent,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMessage]);
-    } catch {
+    } catch (error) {
+      // Network error or API error
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           type: "bot",
-          content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau!",
+          content: "🔧 Không thể kết nối với hệ thống AI.\n\n" +
+                  "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+                  "📞 Hotline: 1900 1234\n" +
+                  "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+                  "Xin lỗi vì sự bất tiện này! 🙏",
           timestamp: new Date(),
         },
       ]);
@@ -413,10 +200,18 @@ const ChatBot: React.FC = () => {
     }
   };
 
+  const handleSendClick = () => {
+    handleSend();
+  };
+
+  const handleSuggestionClick = (query: string) => {
+    handleSend(query);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSendClick();
     }
   };
 
@@ -433,6 +228,7 @@ const ChatBot: React.FC = () => {
         timestamp: new Date(),
       },
     ]);
+    setShowSuggestions(true); // Show suggestions for new conversation
   };
 
   const formatTime = (date: Date) =>
@@ -547,23 +343,52 @@ const ChatBot: React.FC = () => {
                                 const res = await aiApi.chat(`Xác nhận ${action} #${targetId}`, sessionId);
                                 const aiResponse = res.data;
 
+                                let botContent = "";
+                                
+                                // Check if response is a string (might be JSON string)
+                                if (typeof aiResponse === "string") {
+                                  try {
+                                    // Try to parse as JSON to check for error type
+                                    const parsed = JSON.parse(aiResponse);
+                                    if (parsed.type === "error") {
+                                      // AI system error - show maintenance message
+                                      botContent = "🔧 Hệ thống AI đang được bảo trì.\n\n" +
+                                                  "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+                                                  "📞 Hotline: 1900 1234\n" +
+                                                  "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+                                                  "Xin lỗi vì sự bất tiện này! 🙏";
+                                    } else {
+                                      botContent = aiResponse;
+                                    }
+                                  } catch {
+                                    // Not JSON, use as is
+                                    botContent = aiResponse;
+                                  }
+                                } else if ((aiResponse as any).aiResponse) {
+                                  botContent = (aiResponse as any).aiResponse;
+                                } else {
+                                  botContent = "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau!";
+                                }
+
                                 const botMessage: Message = {
                                   id: (Date.now() + 1).toString(),
                                   type: "bot",
-                                  content:
-                                    typeof aiResponse === "string"
-                                      ? aiResponse
-                                      : (aiResponse as any).aiResponse || "",
+                                  content: botContent,
                                   timestamp: new Date(),
                                 };
                                 setMessages((prev) => [...prev, botMessage]);
-                              } catch {
+                              } catch (error) {
+                                // Network error or API error
                                 setMessages((prev) => [
                                   ...prev,
                                   {
                                     id: (Date.now() + 1).toString(),
                                     type: "bot",
-                                    content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau!",
+                                    content: "🔧 Không thể kết nối với hệ thống AI.\n\n" +
+                                            "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+                                            "📞 Hotline: 1900 1234\n" +
+                                            "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+                                            "Xin lỗi vì sự bất tiện này! 🙏",
                                     timestamp: new Date(),
                                   },
                                 ]);
@@ -615,6 +440,26 @@ const ChatBot: React.FC = () => {
               </div>
             )}
 
+            {/* Suggested Questions */}
+            {showSuggestions && !isLoading && messages.length <= 1 && (
+              <div className="jm-suggestions-container">
+                <p className="jm-suggestions-title">Gợi ý câu hỏi:</p>
+                <div className="jm-suggestions-grid">
+                  {SUGGESTED_QUESTIONS.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      className="jm-suggestion-btn"
+                      onClick={() => handleSuggestionClick(suggestion.query)}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <span className="jm-suggestion-icon">{suggestion.icon}</span>
+                      <span className="jm-suggestion-text">{suggestion.text}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -631,7 +476,7 @@ const ChatBot: React.FC = () => {
             />
             <button
               className="jm-send-btn"
-              onClick={handleSend}
+              onClick={handleSendClick}
               disabled={isLoading || !inputValue.trim()}
             >
               <LuSendHorizontal />
@@ -1055,6 +900,76 @@ const ChatBot: React.FC = () => {
 
         /* ── Bot text content ── */
         .jm-bot-text { white-space: pre-wrap; }
+
+        /* ── Suggested Questions ── */
+        .jm-suggestions-container {
+          margin-top: 8px;
+          animation: fadeInUp .4s ease both;
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .jm-suggestions-title {
+          font-size: 12px;
+          color: var(--text-muted);
+          margin: 0 0 10px 0;
+          font-weight: 600;
+          font-family: 'Segoe UI', sans-serif;
+          letter-spacing: .3px;
+        }
+
+        .jm-suggestions-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+
+        .jm-suggestion-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 12px;
+          background: #fff;
+          border: 1.5px solid var(--border);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all .2s ease;
+          font-family: 'Segoe UI', sans-serif;
+          text-align: left;
+          animation: suggestionIn .3s ease both;
+          box-shadow: 0 1px 4px rgba(0,0,0,.04);
+        }
+        @keyframes suggestionIn {
+          from { opacity: 0; transform: scale(.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        .jm-suggestion-btn:hover {
+          background: var(--gold-pale);
+          border-color: var(--gold);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(180,130,20,.15);
+        }
+
+        .jm-suggestion-btn:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 6px rgba(180,130,20,.1);
+        }
+
+        .jm-suggestion-icon {
+          font-size: 18px;
+          flex-shrink: 0;
+          line-height: 1;
+        }
+
+        .jm-suggestion-text {
+          font-size: 12px;
+          color: var(--text);
+          font-weight: 500;
+          line-height: 1.3;
+        }
 
         /* ── Responsive ── */
         @media (max-width: 460px) {

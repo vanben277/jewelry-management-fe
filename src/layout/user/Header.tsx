@@ -306,6 +306,30 @@ const Header: React.FC = () => {
 
             <div className="l-4 m-1 c-1 header__nav--div right">
               <ul className="header__nav--list">
+                {/* Admin Dashboard Button - Only show for ADMIN role */}
+                {user?.role === "ADMIN" && (
+                  <li className="header__nav--item">
+                    <Link to="/admin/dashboard" className="flex items-center gap-1">
+                      <svg 
+                        width="19" 
+                        height="19" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                      </svg>
+                      <span className="ml-1">Quản trị</span>
+                    </Link>
+                  </li>
+                )}
+
                 <li className="header__nav--item">
                   <Link to={user ? "/my-home" : "/login"}>
                     <img
@@ -648,6 +672,40 @@ const Header: React.FC = () => {
                 <i className="fa-solid fa-xmark"></i>
               </label>
               <ul className="navbar__tablet--list" id="tablet-category-menu">
+                {/* Admin Dashboard Link - Only show for ADMIN role */}
+                {user?.role === "ADMIN" && (
+                  <li>
+                    <Link to="/admin/dashboard" className="navbar__tablet--link" style={{ 
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      fontWeight: '600',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      margin: '8px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <svg 
+                        width="18" 
+                        height="18" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                      </svg>
+                      Quản trị hệ thống
+                    </Link>
+                  </li>
+                )}
+
                 {renderTabletCategoryMenu()}
 
                 {/* Mục tĩnh */}
