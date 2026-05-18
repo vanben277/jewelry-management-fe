@@ -54,7 +54,7 @@ const AdminAccounts: React.FC = () => {
       const data = await accountApi.filter({
         phone: filters.phone || undefined,
         role: filters.role || undefined,
-        gender: filters.gender || undefined, // ✅ Thêm gender filter
+        gender: filters.gender || undefined,
         status: filters.status || undefined,
         pageSize: filters.pageSize,
         pageNumber: filters.pageNumber,
