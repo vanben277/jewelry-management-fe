@@ -244,6 +244,11 @@ const Login: React.FC = () => {
           </div>
         </form>
       </div>
+      <style>{`
+            body {
+              display: unset;
+            }
+      `}</style>
     </div>
   );
 };

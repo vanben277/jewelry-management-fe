@@ -26,28 +26,28 @@ const SUGGESTED_QUESTIONS = [
   {
     icon: "💍",
     text: "Tìm nhẫn cưới vàng 18K",
-    query: "Tôi muốn tìm nhẫn cưới vàng 18K"
+    query: "Tôi muốn tìm nhẫn cưới vàng 18K",
   },
   {
     icon: "💎",
     text: "Sản phẩm mới nhất",
-    query: "Cho tôi xem các sản phẩm mới nhất"
+    query: "Cho tôi xem các sản phẩm mới nhất",
   },
   {
     icon: "📦",
     text: "Kiểm tra đơn hàng",
-    query: "Tôi muốn kiểm tra đơn hàng của mình"
+    query: "Tôi muốn kiểm tra đơn hàng của mình",
   },
   {
     icon: "⭐",
     text: "Sản phẩm bán chạy",
-    query: "Cho tôi xem các sản phẩm bán chạy nhất"
+    query: "Cho tôi xem các sản phẩm bán chạy nhất",
   },
   {
     icon: "🔍",
     text: "Tư vấn chọn size nhẫn",
-    query: "Làm sao để chọn size nhẫn phù hợp?"
-  }
+    query: "Làm sao để chọn size nhẫn phù hợp?",
+  },
 ];
 
 const ChatBot: React.FC = () => {
@@ -147,7 +147,7 @@ const ChatBot: React.FC = () => {
       const aiResponse = res.data;
 
       let botContent = "";
-      
+
       // Check if response is a string (might be JSON string)
       if (typeof aiResponse === "string") {
         try {
@@ -155,11 +155,12 @@ const ChatBot: React.FC = () => {
           const parsed = JSON.parse(aiResponse);
           if (parsed.type === "error") {
             // AI system error - show maintenance message
-            botContent = "🔧 Hệ thống AI đang được bảo trì.\n\n" +
-                        "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
-                        "📞 Hotline: 1900 1234\n" +
-                        "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
-                        "Xin lỗi vì sự bất tiện này! 🙏";
+            botContent =
+              "🔧 Hệ thống AI đang được bảo trì.\n\n" +
+              "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+              "📞 Hotline: 1900 1234\n" +
+              "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+              "Xin lỗi vì sự bất tiện này! 🙏";
           } else {
             botContent = aiResponse;
           }
@@ -187,11 +188,12 @@ const ChatBot: React.FC = () => {
         {
           id: (Date.now() + 1).toString(),
           type: "bot",
-          content: "🔧 Không thể kết nối với hệ thống AI.\n\n" +
-                  "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
-                  "📞 Hotline: 1900 1234\n" +
-                  "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
-                  "Xin lỗi vì sự bất tiện này! 🙏",
+          content:
+            "🔧 Không thể kết nối với hệ thống AI.\n\n" +
+            "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+            "📞 Hotline: 1900 1234\n" +
+            "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+            "Xin lỗi vì sự bất tiện này! 🙏",
           timestamp: new Date(),
         },
       ]);
@@ -310,7 +312,9 @@ const ChatBot: React.FC = () => {
                   <div
                     key={msg.id}
                     className={`jm-msg-row ${
-                      msg.type === "user" ? "jm-msg-row--user" : "jm-msg-row--bot"
+                      msg.type === "user"
+                        ? "jm-msg-row--user"
+                        : "jm-msg-row--bot"
                     }`}
                   >
                     {msg.type === "bot" && (
@@ -321,11 +325,14 @@ const ChatBot: React.FC = () => {
 
                     <div className="jm-msg-body">
                       {msg.type === "bot" && aiResponse ? (
-                        <div className={`jm-bubble ${
-                          aiResponse.type === 'products' || aiResponse.type === 'orders' 
-                            ? 'jm-bubble--product' 
-                            : 'jm-bubble--bot'
-                        }`}>
+                        <div
+                          className={`jm-bubble ${
+                            aiResponse.type === "products" ||
+                            aiResponse.type === "orders"
+                              ? "jm-bubble--product"
+                              : "jm-bubble--bot"
+                          }`}
+                        >
                           <AiMessageRenderer
                             response={aiResponse}
                             onConfirm={async (action, targetId) => {
@@ -340,11 +347,14 @@ const ChatBot: React.FC = () => {
                               setIsLoading(true);
 
                               try {
-                                const res = await aiApi.chat(`Xác nhận ${action} #${targetId}`, sessionId);
+                                const res = await aiApi.chat(
+                                  `Xác nhận ${action} #${targetId}`,
+                                  sessionId,
+                                );
                                 const aiResponse = res.data;
 
                                 let botContent = "";
-                                
+
                                 // Check if response is a string (might be JSON string)
                                 if (typeof aiResponse === "string") {
                                   try {
@@ -352,11 +362,12 @@ const ChatBot: React.FC = () => {
                                     const parsed = JSON.parse(aiResponse);
                                     if (parsed.type === "error") {
                                       // AI system error - show maintenance message
-                                      botContent = "🔧 Hệ thống AI đang được bảo trì.\n\n" +
-                                                  "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
-                                                  "📞 Hotline: 1900 1234\n" +
-                                                  "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
-                                                  "Xin lỗi vì sự bất tiện này! 🙏";
+                                      botContent =
+                                        "🔧 Hệ thống AI đang được bảo trì.\n\n" +
+                                        "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+                                        "📞 Hotline: 1900 1234\n" +
+                                        "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+                                        "Xin lỗi vì sự bất tiện này! 🙏";
                                     } else {
                                       botContent = aiResponse;
                                     }
@@ -367,7 +378,8 @@ const ChatBot: React.FC = () => {
                                 } else if ((aiResponse as any).aiResponse) {
                                   botContent = (aiResponse as any).aiResponse;
                                 } else {
-                                  botContent = "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau!";
+                                  botContent =
+                                    "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại sau!";
                                 }
 
                                 const botMessage: Message = {
@@ -384,11 +396,12 @@ const ChatBot: React.FC = () => {
                                   {
                                     id: (Date.now() + 1).toString(),
                                     type: "bot",
-                                    content: "🔧 Không thể kết nối với hệ thống AI.\n\n" +
-                                            "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
-                                            "📞 Hotline: 1900 1234\n" +
-                                            "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
-                                            "Xin lỗi vì sự bất tiện này! 🙏",
+                                    content:
+                                      "🔧 Không thể kết nối với hệ thống AI.\n\n" +
+                                      "Để được hỗ trợ trực tiếp, vui lòng liên hệ:\n" +
+                                      "📞 Hotline: 1900 1234\n" +
+                                      "⏰ Thời gian: 8:00 - 22:00 hàng ngày\n\n" +
+                                      "Xin lỗi vì sự bất tiện này! 🙏",
                                     timestamp: new Date(),
                                   },
                                 ]);
@@ -452,8 +465,12 @@ const ChatBot: React.FC = () => {
                       onClick={() => handleSuggestionClick(suggestion.query)}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <span className="jm-suggestion-icon">{suggestion.icon}</span>
-                      <span className="jm-suggestion-text">{suggestion.text}</span>
+                      <span className="jm-suggestion-icon">
+                        {suggestion.icon}
+                      </span>
+                      <span className="jm-suggestion-text">
+                        {suggestion.text}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -972,13 +989,15 @@ const ChatBot: React.FC = () => {
         }
 
         /* ── Responsive ── */
+         @media (max-width: 768px) {
+          .jm-toggle-btn { bottom: 80px; right: 20px; }
+        }
         @media (max-width: 460px) {
           .jm-chat-window {
             width: 100vw; height: 100dvh;
             bottom: 0; right: 0;
             border-radius: 0;
           }
-          .jm-toggle-btn { bottom: 20px; right: 20px; }
         }
       `}</style>
     </>

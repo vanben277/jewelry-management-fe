@@ -12,7 +12,7 @@ const Register: React.FC = () => {
     firstName: "",
     lastName: "",
     email: "",
-    birthDate: "",
+    dateOfBirth: "",
     gender: "",
     phone: "",
     address: "",
@@ -208,8 +208,8 @@ const Register: React.FC = () => {
               <input
                 type="date"
                 className="w-full h-[33px] p-[24px] text-[14px] border border-gray-300 !rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#0d6efd] focus:ring-offset-2 transition-all cursor-pointer"
-                name="birthDate"
-                value={formData.birthDate}
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
                 onChange={handleInputChange}
               />
             </div>
