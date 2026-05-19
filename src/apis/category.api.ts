@@ -15,10 +15,18 @@ export const categoryApi = {
     return response.data;
   },
 
-  // Get non-parent categories
-  getNonParent: async (): Promise<ApiResponse<Category[]>> => {
+  // Get parent categories (no parent)
+  getParentCategories: async (): Promise<ApiResponse<Category[]>> => {
     const response = await axiosClient.get<ApiResponse<Category[]>>(
-      "/category/name-not-parent",
+      "/category/name-parent",
+    );
+    return response.data;
+  },
+
+  // Get child categories (has parent)
+  getChildCategories: async (): Promise<ApiResponse<Category[]>> => {
+    const response = await axiosClient.get<ApiResponse<Category[]>>(
+      "/category/name-child",
     );
     return response.data;
   },

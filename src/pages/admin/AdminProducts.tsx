@@ -111,7 +111,7 @@ const AdminProducts: React.FC = () => {
     const fetchOptions = async () => {
       try {
         const [catRes, goldRes, statusRes] = await Promise.all([
-          categoryApi.getNonParent(),
+          categoryApi.getChildCategories(),
           productApi.getGoldTypes(),
           productApi.getStatuses(),
         ]);

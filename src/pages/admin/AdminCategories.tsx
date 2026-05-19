@@ -78,7 +78,7 @@ const AdminCategories: React.FC = () => {
 
   const loadParentOptions = useCallback(async () => {
     try {
-      const data = await categoryApi.getNonParent();
+      const data = await categoryApi.getParentCategories();
       setParentOptions(data.data || []);
     } catch (e) {
       console.error("Lỗi tải danh mục cha");
